@@ -1,0 +1,31 @@
+body {
+    background-color: #f8f9fa;
+    padding-top: 50px;
+  }
+  .container {
+    max-width: 800px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  h1 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #495057;
+  }
+  .form-label {
+    font-weight: bold;
+  }
+  .form-control, .form-select {
+    margin-bottom: 15px;
+  }
+  .btn-submit {
+    background-color: #4c7488;
+    border-color: #4c7488;
+    color: #fff;
+  }
+  .btn-submit:hover {
+    background-color: #3b5b6e;
+    border-color: #3b5b6e;
+  }
