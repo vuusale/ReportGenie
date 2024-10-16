@@ -137,6 +137,14 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
             run.add_picture(pie_chart_stream, width=Inches(4.5))
             break
 
+    # Update the table of contents
+    doc.add_paragraph('Table of Contents', style='Heading 1')
+    toc = doc.add_paragraph()
+    toc_run = toc.add_run()
+    for i, vuln in enumerate(vulnerabilities, start=1):
+        toc_run.add_text(f"{i}. {vuln['vulnerability_name']}\n")
+        toc_run.font.size = Pt(12)
+
     # Save the document to a new file
     output_path = 'pentest_report_output.docx'
     doc.save(output_path)
