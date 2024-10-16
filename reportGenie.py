@@ -37,7 +37,10 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
             for i, vuln in enumerate(vulnerabilities, start=1):
                 toc_entry = doc.add_paragraph()
                 toc_entry.add_run(f"{i}. {vuln['vulnerability_name']}").bold = False
+                toc_entry.style = doc.styles['TOC Heading']
+                doc.paragraphs.insert(i, toc_entry)
             break
+
 
     # Add vulnerabilities to the report
     for i, vuln in enumerate(vulnerabilities, start=1):
