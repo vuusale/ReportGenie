@@ -31,17 +31,6 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
             paragraph.paragraph_format.space_after = Pt(18)  # 1.5 line spacing after the logo
             break
 
-    # Find the heading for table of contents and update it
-    for paragraph in doc.paragraphs:
-        if paragraph.style.name == 'Heading 1' and 'Table of Contents' in paragraph.text:
-            for i, vuln in enumerate(vulnerabilities, start=1):
-                toc_entry = doc.add_paragraph()
-                toc_entry.add_run(f"{i}. {vuln['vulnerability_name']}").bold = False
-                toc_entry.style = doc.styles['TOC Heading']
-                doc.paragraphs.insert(i, toc_entry)
-            break
-
-
     # Add vulnerabilities to the report
     for i, vuln in enumerate(vulnerabilities, start=1):
         # Add vulnerability name as a heading (Heading 2)
