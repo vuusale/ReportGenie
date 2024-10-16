@@ -1,9 +1,8 @@
 from docx import Document
 from docx.shared import RGBColor, Pt
-from docx.enum.text import WD_LINE_SPACING
+from docx.enum.text import WD_LINE_SPACING, WD_PARAGRAPH_ALIGNMENT
 import matplotlib.pyplot as plt
 import io
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches
 
 
@@ -35,6 +34,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
         severity_run = severity_paragraph.add_run("Severity: ")
         severity_run.bold = True
         severity_value_run = severity_paragraph.add_run(vuln['severity'])
+        severity_value_run.bold = True
         if vuln['severity'].lower() == 'critical':
             severity_value_run.font.color.rgb = RGBColor(128, 0, 0)  # Burgundy
         elif vuln['severity'].lower() == 'high':
@@ -100,24 +100,46 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
     # Replace the content of the technical summary table
     for table in doc.tables:
         if '{TECHNICAL_SUMMARY_TABLE}' in table.cell(0, 0).text:
-            table.cell(0, 0).text = "Severity"
-            table.cell(0, 1).text = "Count"
-            row_idx = 1
-            for severity, count in severity_counts.items():
-                if row_idx < len(table.rows):
-                    table.cell(row_idx, 0).text = severity
-                    table.cell(row_idx, 1).text = str(count)
-                else:
-                    row = table.add_row()
-                    row.cells[0].text = severity
-                    row.cells[1].text = str(count)
-                row_idx += 1
+            # First row with one column (empty placeholder row)
+            table.cell(0, 0).text = ""
+            table.cell(0, 0).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+            # Second row with severity labels
+            severity_labels = [
+                ('Critical', RGBColor(128, 0, 0)),  # Burgundy
+                ('High', RGBColor(255, 0, 0)),       # Red
+                ('Medium', RGBColor(255, 165, 0)),   # Orange
+                ('Low', RGBColor(0, 0, 255)),        # Blue
+                ('Informational', RGBColor(0, 128, 0)), # Green
+                ('Total', RGBColor(128, 0, 128))     # Purple
+            ]
+            for idx, (label, color) in enumerate(severity_labels):
+                cell = table.cell(1, idx)
+                run = cell.paragraphs[0].add_run(label)
+                run.bold = True
+                run.font.color.rgb = color
+                cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+            # Third row with severity counts
+            counts = [
+                severity_counts['Critical'],
+                severity_counts['High'],
+                severity_counts['Medium'],
+                severity_counts['Low'],
+                severity_counts['Informational'],
+                sum(severity_counts.values())
+            ]
+            for idx, count in enumerate(counts):
+                cell = table.cell(2, idx)
+                run = cell.paragraphs[0].add_run(str(count))
+                run.bold = True
+                cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             break
 
     # Generate a pie chart based on the vulnerability statistics
     labels = [label for label, count in severity_counts.items() if count > 0]
     sizes = [count for count in severity_counts.values() if count > 0]
-    colors = ['#800000', '#FF0000', '#FFA500', '#0000FF', '#008000', '#000000'][:len(labels)]
+    colors = ['#800000', '#FF0000', '#FFA500', '#0000FF', '#008000', '#800080'][:len(labels)]
     
     plt.figure(figsize=(6, 6))
     plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
@@ -136,14 +158,6 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
             run = paragraph.add_run()
             run.add_picture(pie_chart_stream, width=Inches(4.5))
             break
-
-    # Update the table of contents
-    doc.add_paragraph('Table of Contents', style='Heading 1')
-    toc = doc.add_paragraph()
-    toc_run = toc.add_run()
-    for i, vuln in enumerate(vulnerabilities, start=1):
-        toc_run.add_text(f"{i}. {vuln['vulnerability_name']}\n")
-        toc_run.font.size = Pt(12)
 
     # Save the document to a new file
     output_path = 'pentest_report_output.docx'
