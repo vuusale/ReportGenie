@@ -6,7 +6,7 @@ import io
 from docx.shared import Inches
 
 
-def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
+def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, icon_path):
     # Load the report template
     template_path = 'report.docx'  # Replace with your actual template path
     doc = Document(template_path)
@@ -52,32 +52,37 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
 
         # Add vulnerable component
         vulnerable_component_paragraph = doc.add_paragraph()
-        vulnerable_component_run = vulnerable_component_paragraph.add_run(f"URL/Vulnerable component: {vuln['vulnerable_component']}")
+        vulnerable_component_run = vulnerable_component_paragraph.add_run("URL/Vulnerable component: ")
         vulnerable_component_run.bold = True
+        vulnerable_component_value_run = vulnerable_component_paragraph.add_run(vuln['vulnerable_component'])
         vulnerable_component_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add description
         description_paragraph = doc.add_paragraph()
-        description_run = description_paragraph.add_run(f"Description: {vuln['description']}")
+        description_run = description_paragraph.add_run("Description: ")
         description_run.bold = True
+        description_value_run = description_paragraph.add_run(vuln['description'])
         description_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add impact
         impact_paragraph = doc.add_paragraph()
-        impact_run = impact_paragraph.add_run(f"Impact: {vuln['impact']}")
+        impact_run = impact_paragraph.add_run("Impact: ")
         impact_run.bold = True
+        impact_value_run = impact_paragraph.add_run(vuln['impact'])
         impact_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add remediation
         remediation_paragraph = doc.add_paragraph()
-        remediation_run = remediation_paragraph.add_run(f"Remediation: {vuln['remediation']}")
+        remediation_run = remediation_paragraph.add_run("Remediation: ")
         remediation_run.bold = True
+        remediation_value_run = remediation_paragraph.add_run(vuln['remediation'])
         remediation_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add PoC
         poc_paragraph = doc.add_paragraph()
-        poc_run = poc_paragraph.add_run(f"PoC: {vuln['poc']}")
+        poc_run = poc_paragraph.add_run("PoC: ")
         poc_run.bold = True
+        poc_value_run = poc_paragraph.add_run(vuln['poc'])
         poc_paragraph.paragraph_format.line_spacing = 1.5
 
     # Update the technical summary section with vulnerability statistics
@@ -103,16 +108,22 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
             for cell in row.cells:
                 if '{CRITICAL}' in cell.text:
                     cell.text = cell.text.replace('{CRITICAL}', str(severity_counts['Critical']))
+                    cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 if '{HIGH}' in cell.text:
                     cell.text = cell.text.replace('{HIGH}', str(severity_counts['High']))
+                    cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 if '{MEDIUM}' in cell.text:
                     cell.text = cell.text.replace('{MEDIUM}', str(severity_counts['Medium']))
+                    cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 if '{LOW}' in cell.text:
                     cell.text = cell.text.replace('{LOW}', str(severity_counts['Low']))
+                    cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 if '{INFORMATIONAL}' in cell.text:
                     cell.text = cell.text.replace('{INFORMATIONAL}', str(severity_counts['Informational']))
+                    cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
                 if '{TOTAL}' in cell.text:
                     cell.text = cell.text.replace('{TOTAL}', str(sum(severity_counts.values())))
+                    cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
     # Generate a pie chart based on the vulnerability statistics
     labels = [label for label, count in severity_counts.items() if count > 0]
@@ -135,6 +146,27 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
             paragraph.text = ''
             run = paragraph.add_run()
             run.add_picture(pie_chart_stream, width=Inches(4.5))
+            run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            break
+
+    # Insert table of contents at the placeholder
+    for paragraph in doc.paragraphs:
+        if '{TABLE_OF_CONTENTS}' in paragraph.text:
+            paragraph.text = ''
+            toc_paragraph = doc.add_paragraph()
+            toc_paragraph.add_run('Table of Contents').bold = True
+            toc_paragraph.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            for i, vuln in enumerate(vulnerabilities, start=1):
+                toc_entry = doc.add_paragraph()
+                toc_entry.add_run(f"{i}. {vuln['vulnerability_name']}").bold = False
+
+    # Insert icon image at the placeholder
+    for paragraph in doc.paragraphs:
+        if '{ICON}' in paragraph.text:
+            paragraph.text = ''
+            run = paragraph.add_run()
+            run.add_picture(icon_path, width=Inches(1.0))
+            run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             break
 
     # Save the document to a new file
@@ -164,4 +196,7 @@ vulnerabilities = [
     }
 ]
 
-generate_pentest_report('Sample Pentest Report', '2024-01-01', 'John Doe', vulnerabilities)
+# Provide the path to your icon image
+icon_path = 'icon.png'
+
+generate_pentest_report('Sample Pentest Report', '2024-01-01', 'John Doe', vulnerabilities, icon_path)
