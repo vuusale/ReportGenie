@@ -12,23 +12,38 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     template_path = 'report.docx'  # Replace with your actual template path
     doc = Document(template_path)
 
-    # Replace placeholders with input values, preserving formatting
-    for paragraph in doc.paragraphs:
-        if '{REPORT_TITLE}' in paragraph.text:
-            paragraph.text = paragraph.text.replace('{REPORT_TITLE}', report_title)
-        if '{DATE}' in paragraph.text:
-            paragraph.text = paragraph.text.replace('{DATE}', date)
-        if '{REPORTER_NAME}' in paragraph.text:
-            paragraph.text = paragraph.text.replace('{REPORTER_NAME}', reporter_name)
-
-    # Insert icon image at the placeholder and make it larger
+    # Insert icon image on the topmost of the first page
     for paragraph in doc.paragraphs:
         if '{ICON}' in paragraph.text:
             paragraph.clear()
             run = paragraph.add_run()
-            run.add_picture(icon_path, width=Inches(3.5))  # Make the logo large enough to take half of the page width
+            run.add_picture(icon_path, width=Inches(2.0))  # Adjust size if needed
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            paragraph.paragraph_format.space_after = Pt(18)  # 1.5 line spacing after the logo
+            break
+
+    # Add the report title in the middle of the first page
+    for paragraph in doc.paragraphs:
+        if '{REPORT_TITLE}' in paragraph.text:
+            paragraph.clear()
+            report_title_paragraph = paragraph.add_run(report_title + "\nSecurity Assessment Findings Report")
+            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            paragraph.paragraph_format.space_before = Pt(300)  # Position in the middle of the page
+            break
+
+    # Add project name, date, and reporter name in the bottom leftmost corner of the first page
+    footer_paragraph = doc.sections[0].footer.paragraphs[0]
+    footer_paragraph.text = f"Project: {report_title}\nDate: {date}\nReported by: {reporter_name}"
+    footer_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+
+    # Find the heading for table of contents and update it
+    for paragraph in doc.paragraphs:
+        if paragraph.style.name == 'Heading 1' and 'Table of Contents' in paragraph.text:
+            toc_index = doc.paragraphs.index(paragraph) + 1
+            for i, vuln in enumerate(vulnerabilities, start=1):
+                toc_entry = doc.add_paragraph()
+                toc_entry.add_run(f"{i}. {vuln['vulnerability_name']}").bold = False
+                doc.paragraphs.insert(toc_index, toc_entry)
+                toc_index += 1
             break
 
     # Add vulnerabilities to the report
@@ -168,12 +183,6 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
         header_run = header_paragraph.add_run()
         header_run.add_picture(icon_path, width=Inches(1.0))
         header_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    # Align project title, date, and reporter name to bottom left of the first page
-    for paragraph in doc.paragraphs:
-        if '{REPORT_TITLE}' in paragraph.text or '{DATE}' in paragraph.text or '{REPORTER_NAME}' in paragraph.text:
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-            paragraph.paragraph_format.space_before = Pt(600)  # Push text to bottom
 
     # Save the document to a new file
     output_path = 'pentest_report_output.docx'
