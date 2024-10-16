@@ -4,6 +4,7 @@ from docx.enum.text import WD_LINE_SPACING
 import matplotlib.pyplot as plt
 import io
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Inches
 
 
 def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
@@ -99,15 +100,24 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
     # Replace the content of the technical summary table
     for table in doc.tables:
         if '{TECHNICAL_SUMMARY_TABLE}' in table.cell(0, 0).text:
-            for i, severity in enumerate(severity_counts.keys()):
-                table.cell(i + 1, 0).text = severity
-                table.cell(i + 1, 1).text = str(severity_counts[severity])
+            table.cell(0, 0).text = "Severity"
+            table.cell(0, 1).text = "Count"
+            row_idx = 1
+            for severity, count in severity_counts.items():
+                if row_idx < len(table.rows):
+                    table.cell(row_idx, 0).text = severity
+                    table.cell(row_idx, 1).text = str(count)
+                else:
+                    row = table.add_row()
+                    row.cells[0].text = severity
+                    row.cells[1].text = str(count)
+                row_idx += 1
             break
 
     # Generate a pie chart based on the vulnerability statistics
-    labels = list(severity_counts.keys())
-    sizes = list(severity_counts.values())
-    colors = ['#800000', '#FF0000', '#FFA500', '#0000FF', '#008000', '#000000']
+    labels = [label for label, count in severity_counts.items() if count > 0]
+    sizes = [count for count in severity_counts.values() if count > 0]
+    colors = ['#800000', '#FF0000', '#FFA500', '#0000FF', '#008000', '#000000'][:len(labels)]
     
     plt.figure(figsize=(6, 6))
     plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
@@ -124,7 +134,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
         if '{TECHNICAL_SUMMARY_CHART}' in paragraph.text:
             paragraph.text = ''
             run = paragraph.add_run()
-            run.add_picture(pie_chart_stream)
+            run.add_picture(pie_chart_stream, width=Inches(4.5))
             break
 
     # Save the document to a new file
