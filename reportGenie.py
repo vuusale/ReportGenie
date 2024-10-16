@@ -12,45 +12,31 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     template_path = 'report.docx'  # Replace with your actual template path
     doc = Document(template_path)
 
-    # Insert icon image on the topmost of the first page
-    for paragraph in doc.paragraphs:
-        if '{ICON}' in paragraph.text:
-            paragraph.clear()
-            run = paragraph.add_run()
-            run.add_picture(icon_path, width=Inches(2.0))  # Adjust size if needed
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            break
-
-    # Add the report title in the middle of the first page
+    # Replace placeholders with input values, preserving formatting
     for paragraph in doc.paragraphs:
         if '{REPORT_TITLE}' in paragraph.text:
-            paragraph.clear()
-            report_title_paragraph = paragraph.add_run(report_title + "\nSecurity Assessment Findings Report")
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            paragraph.paragraph_format.space_before = Pt(300)  # Position in the middle of the page
-            break
+            paragraph.text = paragraph.text.replace('{REPORT_TITLE}', report_title)
+        if '{DATE}' in paragraph.text:
+            paragraph.text = paragraph.text.replace('{DATE}', date)
+        if '{REPORTER_NAME}' in paragraph.text:
+            paragraph.text = paragraph.text.replace('{REPORTER_NAME}', reporter_name)
 
-    # Add project name, date, and reporter name in the bottom leftmost corner of the first page
-    footer_paragraph = doc.sections[0].footer.paragraphs[0]
-    footer_paragraph.text = f"Project: {report_title}\nDate: {date}\nReported by: {reporter_name}"
-    footer_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-
-    # Find the heading for table of contents and update it
+    # Insert icon image at the placeholder and make it larger
     for paragraph in doc.paragraphs:
-        if paragraph.style.name == 'Heading 1' and 'Table of Contents' in paragraph.text:
-            toc_index = doc.paragraphs.index(paragraph) + 1
-            for i, vuln in enumerate(vulnerabilities, start=1):
-                toc_entry = doc.add_paragraph()
-                toc_entry.add_run(f"{i}. {vuln['vulnerability_name']}").bold = False
-                doc.paragraphs.insert(toc_index, toc_entry)
-                toc_index += 1
+        if '{ICON}' in paragraph.text:
+            paragraph.text = ''
+            run = paragraph.add_run()
+            run.add_picture(icon_path, width=Inches(3.5))  # Make the logo large enough to take half of the page width
+            run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            paragraph_format = paragraph.paragraph_format
+            paragraph_format.space_after = Pt(18)  # 1.5 line spacing after the logo
             break
 
     # Add vulnerabilities to the report
     for i, vuln in enumerate(vulnerabilities, start=1):
         # Add vulnerability name as a heading (Heading 2)
         heading = doc.add_heading(level=2)
-        heading.add_run(f"{i}. {vuln['vulnerability_name']}")
+        heading_run = heading.add_run(f"{i}. {vuln['vulnerability_name']}")
 
         # Set line spacing for vulnerabilities section
         heading.paragraph_format.line_spacing = 1.5
@@ -80,35 +66,35 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
         vulnerable_component_paragraph = doc.add_paragraph()
         vulnerable_component_run = vulnerable_component_paragraph.add_run("URL/Vulnerable component: ")
         vulnerable_component_run.bold = True
-        vulnerable_component_paragraph.add_run(vuln['vulnerable_component'])
+        vulnerable_component_value_run = vulnerable_component_paragraph.add_run(vuln['vulnerable_component'])
         vulnerable_component_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add description
         description_paragraph = doc.add_paragraph()
         description_run = description_paragraph.add_run("Description: ")
         description_run.bold = True
-        description_paragraph.add_run(vuln['description'])
+        description_value_run = description_paragraph.add_run(vuln['description'])
         description_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add impact
         impact_paragraph = doc.add_paragraph()
         impact_run = impact_paragraph.add_run("Impact: ")
         impact_run.bold = True
-        impact_paragraph.add_run(vuln['impact'])
+        impact_value_run = impact_paragraph.add_run(vuln['impact'])
         impact_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add remediation
         remediation_paragraph = doc.add_paragraph()
         remediation_run = remediation_paragraph.add_run("Remediation: ")
         remediation_run.bold = True
-        remediation_paragraph.add_run(vuln['remediation'])
+        remediation_value_run = remediation_paragraph.add_run(vuln['remediation'])
         remediation_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add PoC
         poc_paragraph = doc.add_paragraph()
         poc_run = poc_paragraph.add_run("PoC: ")
         poc_run.bold = True
-        poc_paragraph.add_run(vuln['poc'])
+        poc_value_run = poc_paragraph.add_run(vuln['poc'])
         poc_paragraph.paragraph_format.line_spacing = 1.5
 
     # Update the technical summary section with vulnerability statistics
@@ -169,20 +155,39 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     # Replace the default chart in the template with the new pie chart
     for paragraph in doc.paragraphs:
         if '{TECHNICAL_SUMMARY_CHART}' in paragraph.text:
-            paragraph.clear()
+            paragraph.text = ''
             run = paragraph.add_run()
             run.add_picture(pie_chart_stream, width=Inches(4.5))
             run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            break
+
+    # Insert table of contents at the placeholder
+    for paragraph in doc.paragraphs:
+        if '{TABLE_OF_CONTENTS}' in paragraph.text:
+            paragraph.text = ''
+            toc_paragraph = doc.add_paragraph()
+            toc_paragraph.add_run('Table of Contents').bold = True
+            toc_paragraph.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            for i, vuln in enumerate(vulnerabilities, start=1):
+                toc_entry = doc.add_paragraph()
+                toc_entry.add_run(f"{i}. {vuln['vulnerability_name']}").bold = False
             break
 
     # Add icon image to the header on all pages
     for section in doc.sections:
         header = section.header
         header_paragraph = header.paragraphs[0]
-        header_paragraph.clear()
+        header_paragraph.text = ''
         header_run = header_paragraph.add_run()
         header_run.add_picture(icon_path, width=Inches(1.0))
         header_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        header_paragraph.paragraph_format.line_spacing = 1.5
+
+    # Align project title, date, and reporter name to bottom left of the first page
+    for paragraph in doc.paragraphs:
+        if '{REPORT_TITLE}' in paragraph.text or '{DATE}' in paragraph.text or '{REPORTER_NAME}' in paragraph.text:
+            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+            paragraph.paragraph_format.space_before = Pt(600)  # Push text to bottom
 
     # Save the document to a new file
     output_path = 'pentest_report_output.docx'
