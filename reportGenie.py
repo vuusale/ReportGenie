@@ -97,54 +97,22 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
         else:
             severity_counts['Other'] += 1
 
-    # Find the table containing the {TECHNICAL_SUMMARY_TABLE} placeholder
+    # Find and update the placeholders in the table with severity counts
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
-                if '{TECHNICAL_SUMMARY_TABLE}' in cell.text:
-                    cell.text = ''
-                    # Create a new table after the current cell with the placeholder
-                    new_table = doc.add_table(rows=3, cols=6)
-
-                    # Center align all cells and make text bold
-                    for new_row in new_table.rows:
-                        for new_cell in new_row.cells:
-                            for paragraph in new_cell.paragraphs:
-                                paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-                                run = paragraph.add_run()
-                                run.bold = True
-
-                    # First row (empty)
-                    for new_cell in new_table.rows[0].cells:
-                        new_cell.text = ''
-
-                    # Second row with severity labels
-                    severity_labels = [
-                        ('Critical', RGBColor(128, 0, 0)),  # Burgundy
-                        ('High', RGBColor(255, 0, 0)),       # Red
-                        ('Medium', RGBColor(255, 165, 0)),   # Orange
-                        ('Low', RGBColor(0, 0, 255)),        # Blue
-                        ('Informational', RGBColor(0, 128, 0)), # Green
-                        ('Total', RGBColor(128, 0, 128))     # Purple
-                    ]
-                    for idx, (label, color) in enumerate(severity_labels):
-                        new_cell = new_table.cell(1, idx)
-                        run = new_cell.paragraphs[0].add_run(label)
-                        run.font.color.rgb = color
-
-                    # Third row with severity counts
-                    counts = [
-                        severity_counts['Critical'],
-                        severity_counts['High'],
-                        severity_counts['Medium'],
-                        severity_counts['Low'],
-                        severity_counts['Informational'],
-                        sum(severity_counts.values())
-                    ]
-                    for idx, count in enumerate(counts):
-                        new_cell = new_table.cell(2, idx)
-                        new_cell.text = str(count)
-                    break
+                if '{CRITICAL}' in cell.text:
+                    cell.text = cell.text.replace('{CRITICAL}', str(severity_counts['Critical']))
+                if '{HIGH}' in cell.text:
+                    cell.text = cell.text.replace('{HIGH}', str(severity_counts['High']))
+                if '{MEDIUM}' in cell.text:
+                    cell.text = cell.text.replace('{MEDIUM}', str(severity_counts['Medium']))
+                if '{LOW}' in cell.text:
+                    cell.text = cell.text.replace('{LOW}', str(severity_counts['Low']))
+                if '{INFORMATIONAL}' in cell.text:
+                    cell.text = cell.text.replace('{INFORMATIONAL}', str(severity_counts['Informational']))
+                if '{TOTAL}' in cell.text:
+                    cell.text = cell.text.replace('{TOTAL}', str(sum(severity_counts.values())))
 
     # Generate a pie chart based on the vulnerability statistics
     labels = [label for label, count in severity_counts.items() if count > 0]
