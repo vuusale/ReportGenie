@@ -97,12 +97,23 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
         else:
             severity_counts['Other'] += 1
 
-    # Replace the content of the technical summary table
-    for table in doc.tables:
-        if '{TECHNICAL_SUMMARY_TABLE}' in table.cell(0, 0).text:
-            # First row with one column (empty placeholder row)
-            table.cell(0, 0).text = ""
-            table.cell(0, 0).paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+    # Replace the {TECHNICAL_SUMMARY_TABLE} placeholder with an actual table
+    for paragraph in doc.paragraphs:
+        if '{TECHNICAL_SUMMARY_TABLE}' in paragraph.text:
+            paragraph.text = ''
+            table = doc.add_table(rows=3, cols=6)
+
+            # Center align all cells and make text bold
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                        run = paragraph.add_run()
+                        run.bold = True
+
+            # First row (empty)
+            for cell in table.rows[0].cells:
+                cell.text = ''
 
             # Second row with severity labels
             severity_labels = [
@@ -116,9 +127,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
             for idx, (label, color) in enumerate(severity_labels):
                 cell = table.cell(1, idx)
                 run = cell.paragraphs[0].add_run(label)
-                run.bold = True
                 run.font.color.rgb = color
-                cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
             # Third row with severity counts
             counts = [
@@ -131,9 +140,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities):
             ]
             for idx, count in enumerate(counts):
                 cell = table.cell(2, idx)
-                run = cell.paragraphs[0].add_run(str(count))
-                run.bold = True
-                cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                cell.text = str(count)
             break
 
     # Generate a pie chart based on the vulnerability statistics
