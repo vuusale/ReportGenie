@@ -24,12 +24,11 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     # Insert icon image at the placeholder and make it larger
     for paragraph in doc.paragraphs:
         if '{ICON}' in paragraph.text:
-            paragraph.text = ''
+            paragraph.clear()
             run = paragraph.add_run()
             run.add_picture(icon_path, width=Inches(3.5))  # Make the logo large enough to take half of the page width
-            run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            paragraph_format = paragraph.paragraph_format
-            paragraph_format.space_after = Pt(18)  # 1.5 line spacing after the logo
+            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            paragraph.paragraph_format.space_after = Pt(18)  # 1.5 line spacing after the logo
             break
 
     # Find the heading for table of contents and update it
@@ -44,7 +43,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     for i, vuln in enumerate(vulnerabilities, start=1):
         # Add vulnerability name as a heading (Heading 2)
         heading = doc.add_heading(level=2)
-        heading_run = heading.add_run(f"{i}. {vuln['vulnerability_name']}")
+        heading.add_run(f"{i}. {vuln['vulnerability_name']}")
 
         # Set line spacing for vulnerabilities section
         heading.paragraph_format.line_spacing = 1.5
@@ -74,35 +73,35 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
         vulnerable_component_paragraph = doc.add_paragraph()
         vulnerable_component_run = vulnerable_component_paragraph.add_run("URL/Vulnerable component: ")
         vulnerable_component_run.bold = True
-        vulnerable_component_value_run = vulnerable_component_paragraph.add_run(vuln['vulnerable_component'])
+        vulnerable_component_paragraph.add_run(vuln['vulnerable_component'])
         vulnerable_component_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add description
         description_paragraph = doc.add_paragraph()
         description_run = description_paragraph.add_run("Description: ")
         description_run.bold = True
-        description_value_run = description_paragraph.add_run(vuln['description'])
+        description_paragraph.add_run(vuln['description'])
         description_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add impact
         impact_paragraph = doc.add_paragraph()
         impact_run = impact_paragraph.add_run("Impact: ")
         impact_run.bold = True
-        impact_value_run = impact_paragraph.add_run(vuln['impact'])
+        impact_paragraph.add_run(vuln['impact'])
         impact_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add remediation
         remediation_paragraph = doc.add_paragraph()
         remediation_run = remediation_paragraph.add_run("Remediation: ")
         remediation_run.bold = True
-        remediation_value_run = remediation_paragraph.add_run(vuln['remediation'])
+        remediation_paragraph.add_run(vuln['remediation'])
         remediation_paragraph.paragraph_format.line_spacing = 1.5
 
         # Add PoC
         poc_paragraph = doc.add_paragraph()
         poc_run = poc_paragraph.add_run("PoC: ")
         poc_run.bold = True
-        poc_value_run = poc_paragraph.add_run(vuln['poc'])
+        poc_paragraph.add_run(vuln['poc'])
         poc_paragraph.paragraph_format.line_spacing = 1.5
 
     # Update the technical summary section with vulnerability statistics
@@ -163,7 +162,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     # Replace the default chart in the template with the new pie chart
     for paragraph in doc.paragraphs:
         if '{TECHNICAL_SUMMARY_CHART}' in paragraph.text:
-            paragraph.text = ''
+            paragraph.clear()
             run = paragraph.add_run()
             run.add_picture(pie_chart_stream, width=Inches(4.5))
             run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
@@ -173,11 +172,10 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     for section in doc.sections:
         header = section.header
         header_paragraph = header.paragraphs[0]
-        header_paragraph.text = ''
+        header_paragraph.clear()
         header_run = header_paragraph.add_run()
         header_run.add_picture(icon_path, width=Inches(1.0))
         header_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-        header_paragraph.paragraph_format.line_spacing = 1.5
 
     # Align project title, date, and reporter name to bottom left of the first page
     for paragraph in doc.paragraphs:
