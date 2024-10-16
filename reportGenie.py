@@ -183,15 +183,11 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
         header_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         header_paragraph.paragraph_format.line_spacing = 1.5
 
-    # Add CONFIDENTIAL text to the footer on all pages under a line
+    # Add CONFIDENTIAL text to the footer on all pages below a line
     for section in doc.sections:
         footer = section.footer
         footer_paragraph = footer.paragraphs[0]
         footer_paragraph.text = ''
-        run = footer_paragraph.add_run()
-        run.add_text('CONFIDENTIAL')
-        run.font.bold = True
-        footer_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         # Add a line above the confidential text
         paragraph_element = footer_paragraph._element
         border = OxmlElement('w:pBdr')
@@ -202,6 +198,11 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
         bottom_border.set(qn('w:color'), 'auto')
         border.append(bottom_border)
         paragraph_element.insert(0, border)
+        # Add CONFIDENTIAL text
+        run = footer_paragraph.add_run()
+        run.add_text('CONFIDENTIAL')
+        run.font.bold = True
+        footer_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
     # Align project title, date, and reporter name to bottom left of the first page
     for paragraph in doc.paragraphs:
