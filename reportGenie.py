@@ -1,10 +1,11 @@
 from docx import Document
 from docx.shared import RGBColor, Pt
 from docx.enum.text import WD_LINE_SPACING, WD_PARAGRAPH_ALIGNMENT
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 import matplotlib.pyplot as plt
 import io
 from docx.shared import Inches
-
 
 def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, icon_path):
     # Load the report template
@@ -19,6 +20,15 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
             paragraph.text = paragraph.text.replace('{DATE}', date)
         if '{REPORTER_NAME}' in paragraph.text:
             paragraph.text = paragraph.text.replace('{REPORTER_NAME}', reporter_name)
+
+    # Insert icon image at the placeholder and make it larger
+    for paragraph in doc.paragraphs:
+        if '{ICON}' in paragraph.text:
+            paragraph.text = ''
+            run = paragraph.add_run()
+            run.add_picture(icon_path, width=Inches(3.5))  # Make the logo large enough to take half of the page width
+            run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            break
 
     # Add vulnerabilities to the report
     for i, vuln in enumerate(vulnerabilities, start=1):
@@ -149,25 +159,32 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
             run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             break
 
-    # Insert table of contents at the placeholder
-    for paragraph in doc.paragraphs:
-        if '{TABLE_OF_CONTENTS}' in paragraph.text:
-            paragraph.text = ''
+    # Insert table of contents before technical summary
+    for i, paragraph in enumerate(doc.paragraphs):
+        if '{TECHNICAL_SUMMARY}' in paragraph.text:
             toc_paragraph = doc.add_paragraph()
             toc_paragraph.add_run('Table of Contents').bold = True
             toc_paragraph.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             for i, vuln in enumerate(vulnerabilities, start=1):
                 toc_entry = doc.add_paragraph()
                 toc_entry.add_run(f"{i}. {vuln['vulnerability_name']}").bold = False
-
-    # Insert icon image at the placeholder
-    for paragraph in doc.paragraphs:
-        if '{ICON}' in paragraph.text:
-            paragraph.text = ''
-            run = paragraph.add_run()
-            run.add_picture(icon_path, width=Inches(1.0))
-            run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             break
+
+    # Add icon image to the header on all pages
+    for section in doc.sections:
+        header = section.header
+        header_paragraph = header.paragraphs[0]
+        header_paragraph.text = ''
+        header_run = header_paragraph.add_run()
+        header_run.add_picture(icon_path, width=Inches(1.0))
+        header_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+    # Add CONFIDENTIAL text to the footer on all pages
+    for section in doc.sections:
+        footer = section.footer
+        footer_paragraph = footer.paragraphs[0]
+        footer_paragraph.text = 'CONFIDENTIAL'
+        footer_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
     # Save the document to a new file
     output_path = 'pentest_report_output.docx'
