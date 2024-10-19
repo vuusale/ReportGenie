@@ -1,18 +1,63 @@
 from docx import Document
 from docx.shared import RGBColor, Pt
-from docx.enum.text import WD_LINE_SPACING, WD_PARAGRAPH_ALIGNMENT
+from docx.enum.text import WD_LINE_SPACING, WD_PARAGRAPH_ALIGNMENT, WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 import matplotlib.pyplot as plt
 import io
 from docx.shared import Inches
 
-def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, icon_path):
-    # Load the report template
-    template_path = 'report.docx'  # Replace with your actual template path
+def remove_empty_pages(doc):
+    for paragraph in doc.paragraphs:
+        # Remove page breaks followed by empty paragraphs
+        if paragraph._element.xpath('.//w:br[@w:type="page"]') and not paragraph.text.strip():
+            parent = paragraph._element.getparent()
+            parent.remove(paragraph._element)
+
+def add_toc(doc, paragraph):
+    run = paragraph.add_run("Table of Contents")
+    run.alignment = WD_ALIGN_PARAGRAPH.CENTER 
+    run.font.name = 'Arial'
+    run.font.size = Pt(14)
+    run.bold = True
+    run.underline = True
+
+    fldChar = OxmlElement('w:fldChar')  # creates a new element
+    fldChar.set(qn('w:fldCharType'), 'begin')  # sets attribute on element
+
+    instrText = OxmlElement('w:instrText')
+    instrText.set(qn('xml:space'), 'preserve')  # sets attribute on element
+    instrText.text = 'TOC \\o "1-3" \\h \\z \\u'   # change 1-3 depending on heading levels you need
+
+    fldChar2 = OxmlElement('w:fldChar')
+    fldChar2.set(qn('w:fldCharType'), 'separate')
+
+    fldChar3 = OxmlElement('w:t')
+    fldChar3.text = "Right-click to update field."
+    fldChar3 = OxmlElement('w:updateFields') 
+    fldChar3.set(qn('w:val'), 'true') 
+    fldChar2.append(fldChar3)
+
+    fldChar4 = OxmlElement('w:fldChar')
+    fldChar4.set(qn('w:fldCharType'), 'end')
+
+    r_element = run._r
+    r_element.append(fldChar)
+    r_element.append(instrText)
+    r_element.append(fldChar2)
+    r_element.append(fldChar4)
+
+    # Automatically update TOC without requiring a manual update
+    update_fields = OxmlElement('w:updateFields')
+    update_fields.set(qn('w:val'), 'true')
+    doc.element.body.insert(0, update_fields)
+
+    p_element = paragraph._p
+
+def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, icon_path, executive_summary):
+    template_path = 'report.docx'
     doc = Document(template_path)
 
-    # Replace placeholders with input values, preserving formatting
     for paragraph in doc.paragraphs:
         if '{REPORT_TITLE}' in paragraph.text:
             paragraph.text = paragraph.text.replace('{REPORT_TITLE}', report_title)
@@ -21,83 +66,78 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
         if '{REPORTER_NAME}' in paragraph.text:
             paragraph.text = paragraph.text.replace('{REPORTER_NAME}', reporter_name)
 
-    # Insert icon image at the placeholder and make it larger
     for paragraph in doc.paragraphs:
         if '{ICON}' in paragraph.text:
             paragraph.text = ''
             run = paragraph.add_run()
-            run.add_picture(icon_path, width=Inches(3.5))  # Make the logo large enough to take half of the page width
+            run.add_picture(icon_path, height=Inches(1.2))
             run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             paragraph_format = paragraph.paragraph_format
-            paragraph_format.space_after = Pt(18)  # 1.5 line spacing after the logo
+            paragraph_format.space_after = Pt(18)
             break
 
-    # Add vulnerabilities to the report
+    for paragraph in doc.paragraphs:
+        if '{TOC}' in paragraph.text:
+            paragraph.clear()
+            add_toc(doc, paragraph)
+            break
+
     for i, vuln in enumerate(vulnerabilities, start=1):
-        # Add vulnerability name as a heading (Heading 2)
         heading = doc.add_heading(level=2)
         heading_run = heading.add_run(f"{i}. {vuln['vulnerability_name']}")
 
-        # Set line spacing for vulnerabilities section
         heading.paragraph_format.line_spacing = 1.5
 
-        # Add severity with specific color formatting
         severity_paragraph = doc.add_paragraph()
         severity_run = severity_paragraph.add_run("Severity: ")
         severity_run.bold = True
         severity_value_run = severity_paragraph.add_run(vuln['severity'])
         severity_value_run.bold = True
         if vuln['severity'].lower() == 'critical':
-            severity_value_run.font.color.rgb = RGBColor(128, 0, 0)  # Burgundy
+            severity_value_run.font.color.rgb = RGBColor(128, 0, 0)
         elif vuln['severity'].lower() == 'high':
-            severity_value_run.font.color.rgb = RGBColor(255, 0, 0)  # Red
+            severity_value_run.font.color.rgb = RGBColor(255, 0, 0)
         elif vuln['severity'].lower() == 'medium':
-            severity_value_run.font.color.rgb = RGBColor(255, 165, 0)  # Orange
+            severity_value_run.font.color.rgb = RGBColor(255, 165, 0)
         elif vuln['severity'].lower() == 'low':
-            severity_value_run.font.color.rgb = RGBColor(0, 0, 255)  # Blue
+            severity_value_run.font.color.rgb = RGBColor(0, 0, 255)
         elif vuln['severity'].lower() == 'informational':
-            severity_value_run.font.color.rgb = RGBColor(0, 128, 0)  # Green
+            severity_value_run.font.color.rgb = RGBColor(0, 128, 0)
         else:
-            severity_value_run.font.color.rgb = RGBColor(0, 0, 0)  # Black
+            severity_value_run.font.color.rgb = RGBColor(0, 0, 0)
 
         severity_paragraph.paragraph_format.line_spacing = 1.5
 
-        # Add vulnerable component
         vulnerable_component_paragraph = doc.add_paragraph()
         vulnerable_component_run = vulnerable_component_paragraph.add_run("URL/Vulnerable component: ")
         vulnerable_component_run.bold = True
         vulnerable_component_value_run = vulnerable_component_paragraph.add_run(vuln['vulnerable_component'])
         vulnerable_component_paragraph.paragraph_format.line_spacing = 1.5
 
-        # Add description
         description_paragraph = doc.add_paragraph()
         description_run = description_paragraph.add_run("Description: ")
         description_run.bold = True
         description_value_run = description_paragraph.add_run(vuln['description'])
         description_paragraph.paragraph_format.line_spacing = 1.5
 
-        # Add impact
         impact_paragraph = doc.add_paragraph()
         impact_run = impact_paragraph.add_run("Impact: ")
         impact_run.bold = True
         impact_value_run = impact_paragraph.add_run(vuln['impact'])
         impact_paragraph.paragraph_format.line_spacing = 1.5
 
-        # Add remediation
         remediation_paragraph = doc.add_paragraph()
         remediation_run = remediation_paragraph.add_run("Remediation: ")
         remediation_run.bold = True
         remediation_value_run = remediation_paragraph.add_run(vuln['remediation'])
         remediation_paragraph.paragraph_format.line_spacing = 1.5
 
-        # Add PoC
         poc_paragraph = doc.add_paragraph()
         poc_run = poc_paragraph.add_run("PoC: ")
         poc_run.bold = True
         poc_value_run = poc_paragraph.add_run(vuln['poc'])
         poc_paragraph.paragraph_format.line_spacing = 1.5
 
-    # Update the technical summary section with vulnerability statistics
     severity_counts = {
         'Critical': 0,
         'High': 0,
@@ -114,7 +154,6 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
         else:
             severity_counts['Other'] += 1
 
-    # Find and update the placeholders in the table with severity counts
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -137,7 +176,6 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
                     cell.text = cell.text.replace('{TOTAL}', str(sum(severity_counts.values())))
                     cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
-    # Generate a pie chart based on the vulnerability statistics
     labels = [label for label, count in severity_counts.items() if count > 0]
     sizes = [count for count in severity_counts.values() if count > 0]
     colors = ['#800000', '#FF0000', '#FFA500', '#0000FF', '#008000', '#800080'][:len(labels)]
@@ -145,14 +183,12 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     plt.figure(figsize=(6, 6))
     plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
     plt.axis('equal')
-    plt.title('Vulnerability Severity Distribution')
+    plt.title('Vulnerability Severity Distribution\n')
     
-    # Save the pie chart to a BytesIO object
     pie_chart_stream = io.BytesIO()
     plt.savefig(pie_chart_stream, format='png')
     pie_chart_stream.seek(0)
 
-    # Replace the default chart in the template with the new pie chart
     for paragraph in doc.paragraphs:
         if '{TECHNICAL_SUMMARY_CHART}' in paragraph.text:
             paragraph.text = ''
@@ -161,40 +197,32 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
             run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             break
 
-    # Insert table of contents at the placeholder
     for paragraph in doc.paragraphs:
-        if '{TABLE_OF_CONTENTS}' in paragraph.text:
-            paragraph.text = ''
-            toc_paragraph = doc.add_paragraph()
-            toc_paragraph.add_run('Table of Contents').bold = True
-            toc_paragraph.paragraph_format.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            for i, vuln in enumerate(vulnerabilities, start=1):
-                toc_entry = doc.add_paragraph()
-                toc_entry.add_run(f"{i}. {vuln['vulnerability_name']}").bold = False
+        if '{EXECUTIVE_SUMMARY}' in paragraph.text:
+            paragraph.text = executive_summary
             break
 
-    # Add icon image to the header on all pages
+    # Remove empty pages by iterating over paragraphs and deleting page breaks if followed by empty paragraphs
+    remove_empty_pages(doc)
+
     for section in doc.sections:
         header = section.header
         header_paragraph = header.paragraphs[0]
         header_paragraph.text = ''
         header_run = header_paragraph.add_run()
-        header_run.add_picture(icon_path, width=Inches(1.0))
+        header_run.add_picture(icon_path, height=Inches(0.4))
         header_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         header_paragraph.paragraph_format.line_spacing = 1.5
 
-    # Align project title, date, and reporter name to bottom left of the first page
     for paragraph in doc.paragraphs:
         if '{REPORT_TITLE}' in paragraph.text or '{DATE}' in paragraph.text or '{REPORTER_NAME}' in paragraph.text:
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-            paragraph.paragraph_format.space_before = Pt(600)  # Push text to bottom
+            paragraph.paragraph_format.space_before = Pt(600)
 
-    # Save the document to a new file
     output_path = 'pentest_report_output.docx'
     doc.save(output_path)
     print(f"Report generated: {output_path}")
 
-# Example usage
 vulnerabilities = [
     {
         'vulnerability_name': 'SQL Injection',
@@ -213,10 +241,19 @@ vulnerabilities = [
         'impact': 'Stealing session cookies.',
         'remediation': 'Sanitize user input.',
         'poc': '<script>alert("XSS")</script>'
+    },
+    {
+        'vulnerability_name': 'SSTI',
+        'vulnerable_component': 'http://example.com/comment',
+        'severity': 'Critical',
+        'description': 'SSTI in order placing.',
+        'impact': 'Remote Code Execution.',
+        'remediation': 'Sanitize user input.',
+        'poc': '{{7*7}}'
     }
 ]
 
-# Provide the path to your icon image
-icon_path = 'icon.png'
+executive_summary = "The application was tested thoroughly and 3 vulnerabilities were identified, leading to complete takeover of the system."
 
-generate_pentest_report('Sample Pentest Report', '2024-01-01', 'John Doe', vulnerabilities, icon_path)
+icon_path = 'logo.png'
+generate_pentest_report('Sample Pentest Report', '2024-01-01', 'John Doe', vulnerabilities, icon_path, executive_summary)
