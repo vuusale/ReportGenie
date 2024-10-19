@@ -180,6 +180,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     sizes = [count for count in severity_counts.values() if count > 0]
     colors = ['#800000', '#FF0000', '#FFA500', '#0000FF', '#008000', '#800080'][:len(labels)]
     
+    plt.switch_backend('Agg')
     plt.figure(figsize=(6, 6))
     plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
     plt.axis('equal')
@@ -203,7 +204,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
             break
 
     # Remove empty pages by iterating over paragraphs and deleting page breaks if followed by empty paragraphs
-    remove_empty_pages(doc)
+    # remove_empty_pages(doc)
 
     for section in doc.sections:
         header = section.header
@@ -254,6 +255,7 @@ vulnerabilities = [
 ]
 
 executive_summary = "The application was tested thoroughly and 3 vulnerabilities were identified, leading to complete takeover of the system."
-
 icon_path = 'logo.png'
-generate_pentest_report('Sample Pentest Report', '2024-01-01', 'John Doe', vulnerabilities, icon_path, executive_summary)
+
+if __name__ == "__main__":
+    generate_pentest_report('Sample Pentest Report', '2024-01-01', 'John Doe', vulnerabilities, icon_path, executive_summary)

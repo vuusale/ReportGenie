@@ -53,6 +53,7 @@
 <div class="container">
   <h1>Penetration Testing Report</h1>
   <form method="POST" action="/generate-report">
+    <input type="hidden" class="form-control" id="vulnCount" name="vulnCount" required value="1">
     <!-- Project Details -->
     <div class="mb-3">
       <label for="projectName" class="form-label">Project Name</label>
@@ -60,8 +61,8 @@
     </div>
 
     <div class="mb-3">
-      <label for="clientName" class="form-label">Client Name</label>
-      <input type="text" class="form-control" id="clientName" name="clientName" required>
+      <label for="reporterName" class="form-label">Reporter Name</label>
+      <input type="text" class="form-control" id="reporterName" name="reporterName" required>
     </div>
 
     <div class="mb-3">
@@ -76,12 +77,12 @@
         <h5>Vulnerability 1</h5>
         <div class="mb-3">
           <label for="vulnerabilityTitle-1" class="form-label">Vulnerability Title</label>
-          <input type="text" class="form-control" id="vulnerabilityTitle-1" name="vulnerabilityTitle[]" required>
+          <input type="text" class="form-control" id="vulnerabilityTitle-1" name="vulnerabilityTitle-1" required>
         </div>
 
         <div class="mb-3">
           <label for="severity-1" class="form-label">Severity</label>
-          <select class="form-select" id="severity-1" name="severity[]" required>
+          <select class="form-select" id="severity-1" name="severity-1" required>
             <option value="">Choose...</option>
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
@@ -92,22 +93,17 @@
 
         <div class="mb-3">
           <label for="description-1" class="form-label">Description</label>
-          <textarea class="form-control" id="description-1" name="description[]" rows="4" required></textarea>
+          <textarea class="form-control" id="description-1" name="description-1" rows="4" required></textarea>
         </div>
 
         <div class="mb-3">
           <label for="impact-1" class="form-label">Impact</label>
-          <textarea class="form-control" id="impact-1" name="impact[]" rows="4" required></textarea>
+          <textarea class="form-control" id="impact-1" name="impact-1" rows="4" required></textarea>
         </div>
 
         <div class="mb-3">
           <label for="remediation-1" class="form-label">Remediation</label>
-          <textarea class="form-control" id="remediation-1" name="remediation[]" rows="4" required></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="references-1" class="form-label">References (optional)</label>
-          <textarea class="form-control" id="references-1" name="references[]" rows="2"></textarea>
+          <textarea class="form-control" id="remediation-1" name="remediation-1" rows="4" required></textarea>
         </div>
       </div>
     </div>
@@ -130,6 +126,7 @@
   // Function to add a new vulnerability form
   document.getElementById('add-vuln-btn').addEventListener('click', function () {
     vulnCount++;
+    document.getElementById("vulnCount").value = vulnCount;
     const vulnFormsContainer = document.getElementById('vuln-forms');
 
     const newVulnForm = `
@@ -142,7 +139,7 @@
 
         <div class="mb-3">
           <label for="severity-${vulnCount}" class="form-label">Severity</label>
-          <select class="form-select" id="severity-${vulnCount}" name="severity[]" required>
+          <select class="form-select" id="severity-${vulnCount}" name="severity-${vulnCount}" required>
             <option value="">Choose...</option>
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
@@ -153,22 +150,17 @@
 
         <div class="mb-3">
           <label for="description-${vulnCount}" class="form-label">Description</label>
-          <textarea class="form-control" id="description-${vulnCount}" name="description[]" rows="4" required></textarea>
+          <textarea class="form-control" id="description-${vulnCount}" name="description[${vulnCount}]" rows="4" required></textarea>
         </div>
 
         <div class="mb-3">
           <label for="impact-${vulnCount}" class="form-label">Impact</label>
-          <textarea class="form-control" id="impact-${vulnCount}" name="impact[]" rows="4" required></textarea>
+          <textarea class="form-control" id="impact-${vulnCount}" name="impact[${vulnCount}]" rows="4" required></textarea>
         </div>
 
         <div class="mb-3">
           <label for="remediation-${vulnCount}" class="form-label">Remediation</label>
-          <textarea class="form-control" id="remediation-${vulnCount}" name="remediation[]" rows="4" required></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="references-${vulnCount}" class="form-label">References (optional)</label>
-          <textarea class="form-control" id="references-${vulnCount}" name="references[]" rows="2"></textarea>
+          <textarea class="form-control" id="remediation-${vulnCount}" name="remediation[${vulnCount}]" rows="4" required></textarea>
         </div>
       </div>
     `;
