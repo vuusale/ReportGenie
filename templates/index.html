@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Penetration Test Report Generator</title>
+  <title>ReportGenie - Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
@@ -11,162 +11,130 @@
       padding-top: 50px;
     }
     .container {
-      max-width: 800px;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 1200px;
     }
     h1 {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: bold;
       color: #495057;
     }
-    .form-label {
-      font-weight: bold;
-    }
-    .form-control, .form-select {
-      margin-bottom: 15px;
-    }
-    .btn-submit {
+    .btn-create {
       background-color: #4c7488;
       border-color: #4c7488;
       color: #fff;
     }
-    .btn-submit:hover {
+    .btn-create:hover {
       background-color: #3b5b6e;
       border-color: #3b5b6e;
     }
-    .btn-add-vuln {
-      background-color: #28a745;
-      border-color: #28a745;
+    .btn-settings {
+      background-color: #6c757d;
+      border-color: #6c757d;
       color: #fff;
     }
-    .btn-add-vuln:hover {
-      background-color: #218838;
-      border-color: #218838;
+    .btn-settings:hover {
+      background-color: #5a6268;
+      border-color: #5a6268;
+    }
+    .btn-action {
+      margin-right: 5px;
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Penetration Testing Report</h1>
-  <form method="POST" action="/generate-report">
-    <input type="hidden" class="form-control" id="vulnCount" name="vulnCount" required value="1">
-    <!-- Project Details -->
-    <div class="mb-3">
-      <label for="projectName" class="form-label">Project Name</label>
-      <input type="text" class="form-control" id="projectName" name="projectName" required>
+  <!-- Header Section -->
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <h1>ReportGenie Dashboard</h1>
+    <div>
+      <a href="/generate" class="btn btn-create me-2">Create New Project</a>
+      <button type="button" class="btn btn-settings" id="settings-btn">Settings</button>
     </div>
+  </header>
 
-    <div class="mb-3">
-      <label for="reporterName" class="form-label">Reporter Name</label>
-      <input type="text" class="form-control" id="reporterName" name="reporterName" required>
-    </div>
-
-    <div class="mb-3">
-      <label for="testDate" class="form-label">Date of Test</label>
-      <input type="date" class="form-control" id="testDate" name="testDate" required>
-    </div>
-
-    <!-- Vulnerability Forms Container -->
-    <div id="vuln-forms">
-      <h2>Vulnerabilities</h2>
-      <div class="vuln-form" id="vuln-form-1">
-        <h5>Vulnerability 1</h5>
-        <div class="mb-3">
-          <label for="vulnerabilityTitle-1" class="form-label">Vulnerability Title</label>
-          <input type="text" class="form-control" id="vulnerabilityTitle-1" name="vulnerabilityTitle-1" required>
+  <!-- Existing Projects List Section -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h2>Old Projects</h2>
+      <!-- Search and Filter Options -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <input type="text" class="form-control" id="searchProjects" placeholder="Search projects by name...">
         </div>
-
-        <div class="mb-3">
-          <label for="severity-1" class="form-label">Severity</label>
-          <select class="form-select" id="severity-1" name="severity-1" required>
-            <option value="">Choose...</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-            <option value="Critical">Critical</option>
+        <div class="col-md-3">
+          <select class="form-select" id="filterStatus">
+            <option value="">Filter by Status...</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
           </select>
         </div>
-
-        <div class="mb-3">
-          <label for="description-1" class="form-label">Description</label>
-          <textarea class="form-control" id="description-1" name="description-1" rows="4" required></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="impact-1" class="form-label">Impact</label>
-          <textarea class="form-control" id="impact-1" name="impact-1" rows="4" required></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="remediation-1" class="form-label">Remediation</label>
-          <textarea class="form-control" id="remediation-1" name="remediation-1" rows="4" required></textarea>
+        <div class="col-md-3">
+          <select class="form-select" id="sortProjects">
+            <option value="">Sort by...</option>
+            <option value="name">Name</option>
+            <option value="date">Date</option>
+            <option value="status">Status</option>
+          </select>
         </div>
       </div>
-    </div>
 
-    <!-- Add Vulnerability Button -->
-    <div class="d-grid gap-2">
-      <button type="button" class="btn btn-add-vuln btn-lg" id="add-vuln-btn">Add Vulnerability</button>
+      <!-- Projects Table -->
+      <table class="table table-bordered" id="projectsTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>Project Name</th>
+            <th>Date of Test</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Projects will be added dynamically here -->
+        </tbody>
+      </table>
+      <!-- Empty State -->
+      <div id="noProjectsMessage">
+        <p>Looks like you don't have any projects yet. Let's get started and <a href="/generate">create</a> your first one!</p>
+      </div>
     </div>
-
-    <!-- Submit Button -->
-    <div class="d-grid gap-2 mt-4">
-      <button type="submit" class="btn btn-submit btn-lg">Generate Report</button>
-    </div>
-  </form>
+  </div>
 </div>
 
 <script>
-  let vulnCount = 1;
-  
-  // Function to add a new vulnerability form
-  document.getElementById('add-vuln-btn').addEventListener('click', function () {
-    vulnCount++;
-    document.getElementById("vulnCount").value = vulnCount;
-    const vulnFormsContainer = document.getElementById('vuln-forms');
+    fetch('/projects')
+      .then(response => response.json())
+      .then(data => {
+        const projectsTable = document.getElementById('projectsTable');
+        const projectsTableBody = projectsTable.querySelector('tbody');
+        const noProjectsMessage = document.getElementById('noProjectsMessage');
+        console.log(data);
+        
+        if (data.length > 0) {
+          noProjectsMessage.style.display = 'none';
+          projectsTable.style.display = 'table';
 
-    const newVulnForm = `
-      <div class="vuln-form" id="vuln-form-${vulnCount}">
-        <h5>Vulnerability ${vulnCount}</h5>
-        <div class="mb-3">
-          <label for="vulnerabilityTitle-${vulnCount}" class="form-label">Vulnerability Title</label>
-          <input type="text" class="form-control" id="vulnerabilityTitle-${vulnCount}" name="vulnerabilityTitle[]" required>
-        </div>
-
-        <div class="mb-3">
-          <label for="severity-${vulnCount}" class="form-label">Severity</label>
-          <select class="form-select" id="severity-${vulnCount}" name="severity-${vulnCount}" required>
-            <option value="">Choose...</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-            <option value="Critical">Critical</option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label for="description-${vulnCount}" class="form-label">Description</label>
-          <textarea class="form-control" id="description-${vulnCount}" name="description[${vulnCount}]" rows="4" required></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="impact-${vulnCount}" class="form-label">Impact</label>
-          <textarea class="form-control" id="impact-${vulnCount}" name="impact[${vulnCount}]" rows="4" required></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="remediation-${vulnCount}" class="form-label">Remediation</label>
-          <textarea class="form-control" id="remediation-${vulnCount}" name="remediation[${vulnCount}]" rows="4" required></textarea>
-        </div>
-      </div>
-    `;
-
-    vulnFormsContainer.insertAdjacentHTML('beforeend', newVulnForm);
-  });
+          data.forEach((project, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${project.name}</td>
+              <td>${project.date}</td>
+              <td>${project.status}</td>
+              <td>
+                <button type="button" class="btn btn-primary btn-action">Edit</button>
+                <button type="button" class="btn btn-success btn-action">Download Report</button>
+                <button type="button" class="btn btn-danger btn-action">Delete</button>
+              </td>
+            `;
+            projectsTableBody.appendChild(row);
+          });
+        } else {
+          noProjectsMessage.style.display = 'block';
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching projects:', error);
+      });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

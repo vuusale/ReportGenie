@@ -14,7 +14,19 @@ app.jinja_env.filters['b64decode'] = lambda u: b64decode(u.encode()).decode()
 def index():
     return render_template("index.html") 
 
-@app.route("/generate-report", methods=['POST'])
+@app.route("/generate", methods=['GET'])
+def generate():
+    return render_template("generate.html") 
+
+@app.route("/projects", methods=['GET'])
+def projects():
+    return [{
+        "name": "Mobile application",
+        "date": "2024-11-08",
+        "status": "Active"
+    }]
+
+@app.route("/generate", methods=['POST'])
 def generate_report():
     projectName = request.form.get('projectName')
     reporterName = request.form.get('reporterName')
@@ -35,14 +47,7 @@ def generate_report():
     
     generate_pentest_report(projectName, testDate, reporterName, vulnerabilities, "logo.png", "executive_summary")
 
-    # print(vulns)
-    # thread = Thread(target=generate_pentest_report, args=(projectName, testDate, reporterName, vulnerabilities, "logo.png", "executive_summary"))
-    # thread.start()
-    print(vulnerabilities)
-    return "Report being generated"
-    # ImmutableMultiDict([('projectName', '2'), /
-    # ('', '2'), ('testDate', '2024-10-04'), ('vulnerabilityTitle[/]', '11'), ('severity[]', 'Low'), ('description[]', 'df'), ('impact[]', 'df'), ('remediation[]', 'df')])
-
+    return send_file("pentest_report_output.docx")
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=8000)
