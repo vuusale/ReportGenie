@@ -22,6 +22,7 @@ class Project(db.Model):
     start_date = db.Column(db.String(50), nullable=False)
     end_date = db.Column(db.String(50), nullable=True)
     executive_summary = db.Column(db.Text, nullable=True)
+    vuln_count = db.Column(db.Integer, nullable=True)
     vulnerabilities = db.relationship('Vulnerability', secondary=project_vulnerabilities, backref=db.backref('projects', lazy=True))
 
 class Vulnerability(db.Model):

@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Penetration Test Report Generator</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
   <style>
     body {
       background-color: #f8f9fa;
@@ -55,29 +57,48 @@
       background-color: #c82333;
       border-color: #c82333;
     }
+    .quill-editor {
+      height: 150px;
+      margin-bottom: 15px;
+    }
+    #imageModal {
+      display: none;
+    }
+    .cropper-container {
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Penetration Testing Report</h1>
+  <h1>Edit Report</h1>
   <form method="POST" action="/edit">
-    <input type="hidden" class="form-control" id="vulnCount" name="vulnCount" required value="1">
+    <input type="hidden" class="form-control" id="vulnCount" name="vulnCount" required value="{{project.vulnCount}}">
     <!-- Project Details -->
-     <input type="hidden" name="projectId" id="projectId" value="{{project.project_id}}">
     <div class="mb-3">
       <label for="projectName" class="form-label">Project Name</label>
-      <input type="text" class="form-control" id="projectName" name="projectName" required value="{{project.project_name}}">
+      <input type="text" class="form-control" id="projectName" name="projectName" required value="{{project.projectName}}">
     </div>
 
     <div class="mb-3">
       <label for="reporterName" class="form-label">Reporter Name</label>
-      <input type="text" class="form-control" id="reporterName" name="reporterName" required value="{{project.reporter_name}}">
+      <input type="text" class="form-control" id="reporterName" name="reporterName" required value="{{project.reporterName}}">
     </div>
 
     <div class="mb-3">
-      <label for="testDate" class="form-label">Date of Test</label>
-      <input type="date" class="form-control" id="testDate" name="testDate" required value="{{project.start_date}}">
+      <label for="startDate" class="form-label">Start Date</label>
+      <input type="date" class="form-control" id="startDate" name="startDate" required value="{{project.startDate}}">
+    </div>
+
+    <div class="mb-3">
+      <label for="endDate" class="form-label">End Date</label>
+      <input type="date" class="form-control" id="endDate" name="endDate" required value="{{project.endDate}}">
+    </div>
+
+    <div class="mb-3">
+      <label for="executiveSummary" class="form-label">Executive Summary</label>
+      <textarea class="form-control" id="executiveSummary" name="executiveSummary" rows="4" required value="{{project.executiveSummary}}"></textarea>
     </div>
 
     <!-- Vulnerability Forms Container -->
@@ -103,18 +124,28 @@
 
         <div class="mb-3">
           <label for="description-1" class="form-label">Description</label>
-          <textarea class="form-control" id="description-1" name="description-1" rows="4" required></textarea>
+          <div id="description-editor-1" class="quill-editor"></div>
+          <input type="hidden" id="description-1" name="description-1">
         </div>
 
         <div class="mb-3">
           <label for="impact-1" class="form-label">Impact</label>
-          <textarea class="form-control" id="impact-1" name="impact-1" rows="4" required></textarea>
+          <div id="impact-editor-1" class="quill-editor"></div>
+          <input type="hidden" id="impact-1" name="impact-1">
         </div>
 
         <div class="mb-3">
           <label for="remediation-1" class="form-label">Remediation</label>
-          <textarea class="form-control" id="remediation-1" name="remediation-1" rows="4" required></textarea>
+          <div id="remediation-editor-1" class="quill-editor"></div>
+          <input type="hidden" id="remediation-1" name="remediation-1">
         </div>
+
+        <div class="mb-3">
+          <label for="poc-1" class="form-label">PoC</label>
+          <div id="poc-editor-1" class="quill-editor"></div>
+          <input type="hidden" id="poc-1" name="poc-1">
+        </div>
+
         <button type="button" class="btn btn-remove-vuln" onclick="removeVuln(1)" style="display: none;">Remove</button>
       </div>
     </div>
@@ -126,12 +157,136 @@
 
     <!-- Submit Button -->
     <div class="d-grid gap-2 mt-4">
-      <button type="submit" class="btn btn-submit btn-lg">Generate Report</button>
+      <button type="submit" class="btn btn-submit btn-lg">Edit Report</button>
     </div>
   </form>
 </div>
 
+<!-- Modal for Image Cropping -->
+<div id="imageModal" class="modal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Crop Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <img id="imageToCrop" style="max-width: 100%;">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="cropImageBtn">Crop</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
+  let cropper;
+  $(document).ready(function() {
+    initializeQuillEditors();
+  });
+
+  function initializeQuillEditors() {
+    const editors = ['#description-editor-1', '#impact-editor-1', '#remediation-editor-1', '#poc-editor-1'];
+    const quillInstances = {};
+
+    editors.forEach(function(editorId) {
+      const quill = new Quill(editorId, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, false] }],
+            ['bold', 'italic', 'underline'],
+            ['image', 'code-block'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'align': [] }],
+            ['link', 'image']
+          ]
+        }
+      });
+      quillInstances[editorId] = quill;
+      enableImagePasting(quill);
+    });
+
+    $('form').on('submit', function() {
+      Object.keys(quillInstances).forEach(function(editorId) {
+        const hiddenInputId = editorId.replace('-editor', '');
+        $(hiddenInputId).val(quillInstances[editorId].root.innerHTML);
+      });
+    });
+  }
+
+  function enableImagePasting(quill) {
+    quill.getModule('toolbar').addHandler('image', function() {
+      selectLocalImage(quill);
+    });
+
+    quill.root.addEventListener('paste', function(e) {
+      const clipboardData = e.clipboardData || window.clipboardData;
+      if (clipboardData && clipboardData.items) {
+        for (let i = 0; i < clipboardData.items.length; i++) {
+          const item = clipboardData.items[i];
+          if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              const base64ImageSrc = event.target.result;
+              openCropperModal(base64ImageSrc, quill);
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    });
+  }
+
+  function selectLocalImage(quill) {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = function() {
+      const file = input.files[0];
+      if (/^image\//.test(file.type)) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const base64ImageSrc = event.target.result;
+          openCropperModal(base64ImageSrc, quill);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        console.warn('You could only upload images.');
+      }
+    };
+  }
+
+  function openCropperModal(imageSrc, quill) {
+    const image = document.getElementById('imageToCrop');
+    image.src = imageSrc;
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
+
+    if (cropper) {
+      cropper.destroy();
+    }
+    cropper = new Cropper(image, {
+      aspectRatio: NaN,
+      viewMode: 1,
+    });
+
+    document.getElementById('cropImageBtn').onclick = function() {
+      const canvas = cropper.getCroppedCanvas();
+      const croppedImage = canvas.toDataURL('image/png');
+      quill.insertEmbed(quill.getSelection().index, 'image', croppedImage);
+      modal.hide();
+    };
+  }
+
   let vulnCount = 1;
   
   // Function to add a new vulnerability form
@@ -161,17 +316,26 @@
 
         <div class="mb-3">
           <label for="description-${vulnCount}" class="form-label">Description</label>
-          <textarea class="form-control" id="description-${vulnCount}" name="description[${vulnCount}]" rows="4" required></textarea>
+          <div id="description-editor-${vulnCount}" class="quill-editor"></div>
+          <input type="hidden" id="description-${vulnCount}" name="description[${vulnCount}]">
         </div>
 
         <div class="mb-3">
           <label for="impact-${vulnCount}" class="form-label">Impact</label>
-          <textarea class="form-control" id="impact-${vulnCount}" name="impact[${vulnCount}]" rows="4" required></textarea>
+          <div id="impact-editor-${vulnCount}" class="quill-editor"></div>
+          <input type="hidden" id="impact-${vulnCount}" name="impact[${vulnCount}]">
         </div>
 
         <div class="mb-3">
           <label for="remediation-${vulnCount}" class="form-label">Remediation</label>
-          <textarea class="form-control" id="remediation-${vulnCount}" name="remediation[${vulnCount}]" rows="4" required></textarea>
+          <div id="remediation-editor-${vulnCount}" class="quill-editor"></div>
+          <input type="hidden" id="remediation-${vulnCount}" name="remediation[${vulnCount}]">
+        </div>
+
+        <div class="mb-3">
+          <label for="poc-${vulnCount}" class="form-label">PoC</label>
+          <div id="poc-editor-${vulnCount}" class="quill-editor"></div>
+          <input type="hidden" id="poc-${vulnCount}" name="poc[${vulnCount}]">
         </div>
 
         <button type="button" class="btn btn-remove-vuln" onclick="removeVuln(${vulnCount})">Remove</button>
@@ -179,8 +343,39 @@
     `;
 
     vulnFormsContainer.insertAdjacentHTML('beforeend', newVulnForm);
+    initializeNewQuillEditor(vulnCount);
     updateRemoveButtonVisibility();
   });
+
+  function initializeNewQuillEditor(vulnCount) {
+    const editors = [
+      `#description-editor-${vulnCount}`,
+      `#impact-editor-${vulnCount}`,
+      `#remediation-editor-${vulnCount}`,
+      `#poc-editor-${vulnCount}`
+    ];
+    editors.forEach(function(editorId) {
+      const quill = new Quill(editorId, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, false] }],
+            ['bold', 'italic', 'underline'],
+            ['image', 'code-block'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'align': [] }],
+            ['link', 'image']
+          ]
+        }
+      });
+      enableImagePasting(quill);
+
+      $(`form`).on('submit', function() {
+        const hiddenInputId = editorId.replace('-editor', '');
+        $(hiddenInputId).val(quill.root.innerHTML);
+      });
+    });
+  }
 
   // Function to remove a vulnerability form
   function removeVuln(vulnId) {
@@ -204,7 +399,7 @@
             label.setAttribute('for', newFor);
           }
         });
-        form.querySelectorAll('input, select, textarea').forEach(input => {
+        form.querySelectorAll('input, select, textarea, .quill-editor').forEach(input => {
           const inputId = input.getAttribute('id');
           if (inputId) {
             const newId = inputId.replace(/-\d+$/, `-${newIndex}`);
@@ -239,5 +434,5 @@
   updateRemoveButtonVisibility();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-</body
+</body>
+</html>

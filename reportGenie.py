@@ -54,7 +54,7 @@ def add_toc(doc, paragraph):
 
     p_element = paragraph._p
 
-def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, icon_path, executive_summary):
+def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, icon_path, executive_summary, output_path):
     template_path = 'report.docx'
     doc = Document(template_path)
 
@@ -220,7 +220,6 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
             paragraph.paragraph_format.space_before = Pt(600)
 
-    output_path = 'pentest_report_output.docx'
     doc.save(output_path)
     print(f"Report generated: {output_path}")
 

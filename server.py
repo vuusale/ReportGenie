@@ -38,7 +38,9 @@ def generate():
 def generate_report():
     projectName = request.form.get("projectName")
     reporterName = request.form.get("reporterName")
-    testDate = request.form.get("testDate")
+    startDate = request.form.get("startDate")
+    endDate = request.form.get("endDate")
+    executiveSummary = request.form.get("executiveSummary")
     vulnCount = int(request.form.get("vulnCount"))
     vulnerabilities = []
     for i in range(1, vulnCount+1):
@@ -53,46 +55,58 @@ def generate_report():
         }
         vulnerabilities.append(vulnerability)
     
-    generate_pentest_report(projectName, testDate, reporterName, vulnerabilities, "logo.png", "executive_summary")
     new_project = Project(
         project_name=projectName,
         reporter_name=reporterName,
-        start_date=testDate,
-        end_date=testDate,
-        executive_summary="d"
+        start_date=startDate,
+        end_date=endDate,
+        executive_summary=executiveSummary,
+        vuln_count=vulnCount
     )
+
     db.session.add(new_project)
     db.session.commit()
 
-    return render_template("index.html", message="Report ready for download")
+    generate_pentest_report(projectName, startDate, reporterName, vulnerabilities, "logo.png", executiveSummary, f"reports/report-{new_project.project_id}.docx")
+
+    return redirect("/")
 
 @app.route("/delete", methods=["GET"])
 def delete():
     project_id = int(request.args.get("project_id"))
     Project.query.filter_by(project_id=project_id).delete()
     db.session.commit()
-    return render_template("index.html", message=f"Project deleted successfully")
+    return redirect("/")
 
 @app.route("/edit", methods=["GET"])
 def get_edit():
     project_id = int(request.args.get("project_id"))
     project = Project.query.get_or_404(project_id)
+    print(project)
     return render_template("edit.html", project=project)
 
 @app.route("/edit", methods=["POST"])
 def post_edit():
     project_id = int(request.form.get("project_id"))
     project = Project.query.get_or_404(project_id)
+    vulnCount = project.vulnCount
 
     project.project_name = request.form.projectName
     project.reporter_name = request.form.reporterName
     project.start_date = request.form.testDate
     project.end_date = request.form.testDate
     project.executive_summary = "request.form.executive_summary"
+    # for i in range(vulnCount):
+        # setattr(project, f"vulnerabilityTitle")
 
     db.session.commit()
 
     return render_template("index.html", message="Project edited successfully")
+
+@app.route("/download", methods=["GET"])
+def download():
+    project_id = int(request.args.get("project_id"))
+    return send_file(f"reports/report-{project_id}.docx")
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8000)

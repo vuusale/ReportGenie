@@ -48,7 +48,7 @@
   <header class="d-flex justify-content-between align-items-center mb-4">
     <h1><img src="favicon.ico" width="50" /> ReportGenie Dashboard</h1>
     <div>
-      <a href="/generate" class="btn btn-create me-2">Create New Project</a>
+      <a href="/generate" class="btn btn-create me-2">Generate Report</a>
       <button type="button" class="btn btn-settings" id="settings-btn">Settings</button>
     </div>
   </header>
@@ -56,7 +56,7 @@
   <!-- Existing Projects List Section -->
   <div class="card mb-4">
     <div class="card-body">
-      <h2>Old Projects</h2>
+      <h2>Old Reports</h2>
       <!-- Search and Filter Options -->
       <div class="row mb-3">
         <div class="col-md-6">
@@ -121,7 +121,7 @@
               <td>${project.end_date}</td>
               <td>
                 <a href="/edit?project_id=${project.project_id}" class="btn btn-primary btn-action" role="button">Edit</a>
-                <a href="#link" class="btn btn-success btn-action" role="button">Download Report</a>
+                <a href="/download?project_id=${project.project_id}" class="btn btn-success btn-action" role="button">Download Report</a>
                 <a href="/delete?project_id=${project.project_id}" class="btn btn-danger btn-action" role="button">Delete</a>
               </td>
             `;
