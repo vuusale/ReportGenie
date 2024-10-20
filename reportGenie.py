@@ -253,9 +253,20 @@ vulnerabilities = [
         'poc': '{{7*7}}'
     }
 ]
+vulnerabilities2 = [
+    {
+        'vulnerability_name': 'a',
+        'vulnerable_component': 'http://example.com/login',
+        'severity': 'High',
+        'description': 'SQL injection vulnerability in login form.',
+        'impact': 'Access to all user data.',
+        'remediation': 'Use parameterized queries.',
+        'poc': 'Use this to bypass authentication.'
+    }
+]
 
-executive_summary = "The application was tested thoroughly and 3 vulnerabilities were identified, leading to complete takeover of the system."
+executive_summary = "a."
 icon_path = 'logo.png'
 
 if __name__ == "__main__":
-    generate_pentest_report('Sample Pentest Report', '2024-01-01', 'John Doe', vulnerabilities, icon_path, executive_summary)
+    generate_pentest_report('Sample Pentest Report', '2024-01-01', 'John Doe', vulnerabilities2, icon_path, executive_summary)
