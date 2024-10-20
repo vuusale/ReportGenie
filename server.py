@@ -63,6 +63,7 @@ def generate_report():
         executive_summary=executiveSummary,
         vuln_count=vulnCount
     )
+    # insert vulnerability entries
 
     db.session.add(new_project)
     db.session.commit()
@@ -96,6 +97,7 @@ def post_edit():
     project.start_date = request.form.testDate
     project.end_date = request.form.testDate
     project.executive_summary = "request.form.executive_summary"
+    # remove old vulnerability entries and insert new ones
     # for i in range(vulnCount):
         # setattr(project, f"vulnerabilityTitle")
 
