@@ -27,7 +27,6 @@ def projects():
             'vulnerabilities': [vuln.vulnerability_id for vuln in project.vulnerabilities]
         }
         project_list.append(project_data)
-    print(project_list)
     return jsonify(project_list)
 
 @app.route("/generate", methods=["GET"])
@@ -43,17 +42,36 @@ def generate_report():
     executiveSummary = request.form.get("executiveSummary")
     vulnCount = int(request.form.get("vulnCount"))
     vulnerabilities = []
+    last_project = db.session.query(Project).order_by(Project.project_id.desc()).first()
+    if last_project:
+        project_id = last_project.project_id+ 1
+    else:
+        project_id = 1
+
     for i in range(1, vulnCount+1):
         vulnerability = {
-        "vulnerability_name": request.form.get(f"vulnerabilityTitle-{i}"),
-        "vulnerable_component": "http://example.com/comment",
-        "severity": request.form.get(f"severity-{i}"),
-        "description": request.form.get(f"description-{i}"),
-        "impact": request.form.get(f"impact-{i}"),
-        "remediation": request.form.get(f"remediation-{i}"),
-        "poc": "{{7*7}}"
+            "vulnerability_name": request.form.get(f"vulnerabilityTitle-{i}"),
+            "vulnerable_component": "http://example.com/comment",
+            "severity": request.form.get(f"severity-{i}"),
+            "description": request.form.get(f"description-{i}"),
+            "impact": request.form.get(f"impact-{i}"),
+            "remediation": request.form.get(f"remediation-{i}"),
+            "poc": "{{7*7}}"
         }
         vulnerabilities.append(vulnerability)
+        
+        new_vulnerability_obj = Vulnerability(
+            project_id = project_id,
+            title = vulnerability["vulnerability_name"],
+            severity = vulnerability["vulnerability_name"],
+            vulnerable_component = vulnerability["vulnerable_component"],
+            description = vulnerability["description"],
+            impact = vulnerability["impact"],
+            remediation = vulnerability["remediation"],
+            poc = vulnerability["poc"]
+        )
+        db.session.add(new_vulnerability_obj)
+        db.session.commit()
     
     new_project = Project(
         project_name=projectName,
@@ -83,25 +101,43 @@ def delete():
 def get_edit():
     project_id = int(request.args.get("project_id"))
     project = Project.query.get_or_404(project_id)
-    print(project)
-    return render_template("edit.html", project=project)
+    vulnerabilities = Vulnerability.query.filter(project_id == project_id).all()
+    print(project.vuln_count)
+    return render_template("edit.html", project=project, vulnerabilities=vulnerabilities)
 
 @app.route("/edit", methods=["POST"])
 def post_edit():
     project_id = int(request.form.get("project_id"))
     project = Project.query.get_or_404(project_id)
-    vulnCount = project.vulnCount
+    vulnCount = project.vuln_count
 
-    project.project_name = request.form.projectName
-    project.reporter_name = request.form.reporterName
-    project.start_date = request.form.testDate
-    project.end_date = request.form.testDate
-    project.executive_summary = "request.form.executive_summary"
-    # remove old vulnerability entries and insert new ones
-    # for i in range(vulnCount):
-        # setattr(project, f"vulnerabilityTitle")
-
+    project.project_name = request.form.get("project_name")
+    project.reporter_name = request.form.get("reporter_name")
+    project.start_date = request.form.get("start_date")
+    project.end_date = request.form.get("end_date")
+    project.executive_summary = request.form.get("executive_summary")
     db.session.commit()
+
+    # remove old vulnerability entries
+    delete_q = Vulnerability.__table__.delete().where(Vulnerability.project_id == project_id)
+    db.session.execute(delete_q)
+    db.session.commit()
+
+    # insert new ones
+    columns = ["vulnerabilityTitle", "description", "remediation", "impact", "poc"]
+    for i in range(1, vulnCount + 1):
+        new_vulnerability_obj = Vulnerability(
+            project_id = project_id,
+            title = request.form.get(f"vulnerabilityTitle-{i}"),
+            severity = request.form.get(f"severity-{i}"),
+            vulnerable_component = request.form.get(f"vulnerable_component-{i}"),
+            description = request.form.get(f"description-{i}"),
+            impact = request.form.get(f"impact-{i}"),
+            remediation = request.form.get(f"remediation-{i}"),
+            poc = request.form.get(f"poc-{i}"),
+        )
+        db.session.add(new_vulnerability_obj)
+        db.session.commit()
 
     return render_template("index.html", message="Project edited successfully")
 

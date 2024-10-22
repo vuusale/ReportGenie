@@ -29,9 +29,10 @@ class Vulnerability(db.Model):
     __tablename__ = 'vulnerabilities'
 
     vulnerability_id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(150), nullable=False)
     severity = db.Column(db.String(50), nullable=False)
-    vulnerable_component = db.Column(db.String(100), nullable=False)
+    vulnerable_component = db.Column(db.String(100), nullable=True)
     description = db.Column(db.Text, nullable=True)
     impact = db.Column(db.Text, nullable=True)
     remediation = db.Column(db.Text, nullable=True)

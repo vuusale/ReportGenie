@@ -74,80 +74,83 @@
 <div class="container">
   <h1>Edit Report</h1>
   <form method="POST" action="/edit">
-    <input type="hidden" class="form-control" id="vulnCount" name="vulnCount" required value="{{project.vulnCount}}">
+    <input type="hidden" class="form-control" id="vuln_count" name="vuln_count" required value="{{project.vuln_count}}">
+    <input type="hidden" class="form-control" id="project_id" name="project_id" required value="{{project.project_id}}">
     <!-- Project Details -->
     <div class="mb-3">
-      <label for="projectName" class="form-label">Project Name</label>
-      <input type="text" class="form-control" id="projectName" name="projectName" required value="{{project.projectName}}">
+      <label for="project_name" class="form-label">Project Name</label>
+      <input type="text" class="form-control" id="project_name" name="project_name" required value="{{ project.project_name }}">
     </div>
 
     <div class="mb-3">
-      <label for="reporterName" class="form-label">Reporter Name</label>
-      <input type="text" class="form-control" id="reporterName" name="reporterName" required value="{{project.reporterName}}">
+      <label for="reporter_name" class="form-label">Reporter Name</label>
+      <input type="text" class="form-control" id="reporter_name" name="reporter_name" required value="{{ project.reporter_name }}">
     </div>
 
     <div class="mb-3">
-      <label for="startDate" class="form-label">Start Date</label>
-      <input type="date" class="form-control" id="startDate" name="startDate" required value="{{project.startDate}}">
+      <label for="start_date" class="form-label">Start Date</label>
+      <input type="date" class="form-control" id="start_date" name="start_date" required value="{{ project.start_date }}">
     </div>
 
     <div class="mb-3">
-      <label for="endDate" class="form-label">End Date</label>
-      <input type="date" class="form-control" id="endDate" name="endDate" required value="{{project.endDate}}">
+      <label for="end_date" class="form-label">End Date</label>
+      <input type="date" class="form-control" id="end_date" name="end_date" required value="{{ project.end_date }}">
     </div>
 
     <div class="mb-3">
-      <label for="executiveSummary" class="form-label">Executive Summary</label>
-      <textarea class="form-control" id="executiveSummary" name="executiveSummary" rows="4" required value="{{project.executiveSummary}}"></textarea>
+      <label for="executive_summary" class="form-label">Executive Summary</label>
+      <p></p>
+      <textarea class="form-control" id="executive_summary" name="executive_summary" rows="4" required>{{ project.executive_summary }}</textarea>
     </div>
 
     <!-- Vulnerability Forms Container -->
     <div id="vuln-forms">
       <h2>Vulnerabilities</h2>
-      <div class="vuln-form" id="vuln-form-1">
-        <h5>Vulnerability 1</h5>
+      {% for vulnerability in vulnerabilities %}
+      <div class="vuln-form" id="vuln-form-{{ loop.index }}">
+        <h5>Vulnerability {{ loop.index }}</h5>
         <div class="mb-3">
-          <label for="vulnerabilityTitle-1" class="form-label">Vulnerability Title</label>
-          <input type="text" class="form-control" id="vulnerabilityTitle-1" name="vulnerabilityTitle-1" required>
+          <label for="vulnerabilityTitle-{{ loop.index }}" class="form-label">Vulnerability Title</label>
+          <input type="text" class="form-control" id="vulnerabilityTitle-{{ loop.index }}" name="vulnerabilityTitle[{{ loop.index }}]" required value="{{ vulnerability.title }}">
         </div>
 
         <div class="mb-3">
-          <label for="severity-1" class="form-label">Severity</label>
-          <select class="form-select" id="severity-1" name="severity-1" required>
-            <option value="">Choose...</option>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-            <option value="Critical">Critical</option>
+          <label for="severity-{{ loop.index }}" class="form-label">Severity</label>
+          <select class="form-select" id="severity-{{ loop.index }}" name="severity[{{ loop.index }}]" required>
+            <option value="Low" {% if vulnerability.severity == 'Low' %}selected{% endif %}>Low</option>
+            <option value="Medium" {% if vulnerability.severity == 'Medium' %}selected{% endif %}>Medium</option>
+            <option value="High" {% if vulnerability.severity == 'High' %}selected{% endif %}>High</option>
+            <option value="Critical" {% if vulnerability.severity == 'Critical' %}selected{% endif %}>Critical</option>
           </select>
         </div>
 
         <div class="mb-3">
-          <label for="description-1" class="form-label">Description</label>
-          <div id="description-editor-1" class="quill-editor"></div>
-          <input type="hidden" id="description-1" name="description-1">
+          <label for="description-{{ loop.index }}" class="form-label">Description</label>
+          <div id="description-editor-{{ loop.index }}" class="quill-editor">{{ vulnerability.description | safe }}</div>
+          <input type="hidden" id="description-{{ loop.index }}" name="description[{{ loop.index }}]">
         </div>
 
         <div class="mb-3">
-          <label for="impact-1" class="form-label">Impact</label>
-          <div id="impact-editor-1" class="quill-editor"></div>
-          <input type="hidden" id="impact-1" name="impact-1">
+          <label for="impact-{{ loop.index }}" class="form-label">Impact</label>
+          <div id="impact-editor-{{ loop.index }}" class="quill-editor">{{ vulnerability.impact | safe }}</div>
+          <input type="hidden" id="impact-{{ loop.index }}" name="impact[{{ loop.index }}]">
         </div>
 
         <div class="mb-3">
-          <label for="remediation-1" class="form-label">Remediation</label>
-          <div id="remediation-editor-1" class="quill-editor"></div>
-          <input type="hidden" id="remediation-1" name="remediation-1">
+          <label for="remediation-{{ loop.index }}" class="form-label">Remediation</label>
+          <div id="remediation-editor-{{ loop.index }}" class="quill-editor">{{ vulnerability.remediation | safe }}</div>
+          <input type="hidden" id="remediation-{{ loop.index }}" name="remediation[{{ loop.index }}]">
         </div>
 
         <div class="mb-3">
-          <label for="poc-1" class="form-label">PoC</label>
-          <div id="poc-editor-1" class="quill-editor"></div>
-          <input type="hidden" id="poc-1" name="poc-1">
+          <label for="poc-{{ loop.index }}" class="form-label">PoC</label>
+          <div id="poc-editor-{{ loop.index }}" class="quill-editor">{{ vulnerability.poc | safe }}</div>
+          <input type="hidden" id="poc-{{ loop.index }}" name="poc[{{ loop.index }}]">
         </div>
 
-        <button type="button" class="btn btn-remove-vuln" onclick="removeVuln(1)" style="display: none;">Remove</button>
+        <button type="button" class="btn btn-remove-vuln" onclick="removeVuln({{ loop.index0 }})">Delete</button>
       </div>
+      {% endfor %}
     </div>
 
     <!-- Add Vulnerability Button -->
@@ -191,11 +194,9 @@
   });
 
   function initializeQuillEditors() {
-    const editors = ['#description-editor-1', '#impact-editor-1', '#remediation-editor-1', '#poc-editor-1'];
-    const quillInstances = {};
-
-    editors.forEach(function(editorId) {
-      const quill = new Quill(editorId, {
+    $('.quill-editor').each(function() {
+      const editorId = $(this).attr('id');
+      const quill = new Quill(`#${editorId}`, {
         theme: 'snow',
         modules: {
           toolbar: [
@@ -208,14 +209,15 @@
           ]
         }
       });
-      quillInstances[editorId] = quill;
       enableImagePasting(quill);
+      $(this).data('quill', quill);
     });
 
     $('form').on('submit', function() {
-      Object.keys(quillInstances).forEach(function(editorId) {
-        const hiddenInputId = editorId.replace('-editor', '');
-        $(hiddenInputId).val(quillInstances[editorId].root.innerHTML);
+      $('.quill-editor').each(function() {
+        const quill = $(this).data('quill');
+        const hiddenInputId = $(this).attr('id').replace('-editor', '');
+        $(`#${hiddenInputId}`).val(quill.root.innerHTML);
       });
     });
   }
@@ -277,7 +279,7 @@
     cropper = new Cropper(image, {
       aspectRatio: NaN,
       viewMode: 1,
-    });
+    });x
 
     document.getElementById('cropImageBtn').onclick = function() {
       const canvas = cropper.getCroppedCanvas();
@@ -287,8 +289,8 @@
     };
   }
 
-  let vulnCount = 1;
-  
+  let vulnCount = {{ vulnerabilities | length }};
+
   // Function to add a new vulnerability form
   document.getElementById('add-vuln-btn').addEventListener('click', function () {
     vulnCount++;
@@ -300,13 +302,12 @@
         <h5>Vulnerability ${vulnCount}</h5>
         <div class="mb-3">
           <label for="vulnerabilityTitle-${vulnCount}" class="form-label">Vulnerability Title</label>
-          <input type="text" class="form-control" id="vulnerabilityTitle-${vulnCount}" name="vulnerabilityTitle[]" required>
+          <input type="text" class="form-control" id="vulnerabilityTitle-${vulnCount}" name="vulnerabilityTitle[${vulnCount}]" required>
         </div>
 
         <div class="mb-3">
           <label for="severity-${vulnCount}" class="form-label">Severity</label>
-          <select class="form-select" id="severity-${vulnCount}" name="severity-${vulnCount}" required>
-            <option value="">Choose...</option>
+          <select class="form-select" id="severity-${vulnCount}" name="severity[${vulnCount}]" required>
             <option value="Low">Low</option>
             <option value="Medium">Medium</option>
             <option value="High">High</option>
@@ -338,7 +339,7 @@
           <input type="hidden" id="poc-${vulnCount}" name="poc[${vulnCount}]">
         </div>
 
-        <button type="button" class="btn btn-remove-vuln" onclick="removeVuln(${vulnCount})">Remove</button>
+        <button type="button" class="btn btn-remove-vuln" onclick="removeVuln(${vulnCount})">Delete</button>
       </div>
     `;
 
@@ -419,16 +420,13 @@
   // Function to update the visibility of remove buttons
   function updateRemoveButtonVisibility() {
     const removeButtons = document.querySelectorAll('.btn-remove-vuln');
-    if (vulnCount > 1) {
-      removeButtons.forEach(button => {
+    removeButtons.forEach(button => {
         button.style.display = 'inline-block';
-      });
-    } else {
-      removeButtons.forEach(button => {
-        button.style.display = 'none';
-      });
+    });
+    if (vulnCount === 1) {
+        removeButtons[0].style.display = 'none';
     }
-  }
+}
 
   // Initial call to set remove button visibility
   updateRemoveButtonVisibility();
