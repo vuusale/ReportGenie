@@ -44,14 +44,14 @@ def generate_report():
     vulnerabilities = []
     last_project = db.session.query(Project).order_by(Project.project_id.desc()).first()
     if last_project:
-        project_id = last_project.project_id+ 1
+        project_id = last_project.project_id+1
     else:
         project_id = 1
 
     for i in range(1, vulnCount+1):
         vulnerability = {
             "vulnerability_name": request.form.get(f"vulnerabilityTitle-{i}"),
-            "vulnerable_component": "http://example.com/comment",
+            "vulnerable_component": request.form.get(f"vulnerable_component-{i}"),
             "severity": request.form.get(f"severity-{i}"),
             "description": request.form.get(f"description-{i}"),
             "impact": request.form.get(f"impact-{i}"),
@@ -63,7 +63,7 @@ def generate_report():
         new_vulnerability_obj = Vulnerability(
             project_id = project_id,
             title = vulnerability["vulnerability_name"],
-            severity = vulnerability["vulnerability_name"],
+            severity = vulnerability["severity"],
             vulnerable_component = vulnerability["vulnerable_component"],
             description = vulnerability["description"],
             impact = vulnerability["impact"],
@@ -81,7 +81,6 @@ def generate_report():
         executive_summary=executiveSummary,
         vuln_count=vulnCount
     )
-    # insert vulnerability entries
 
     db.session.add(new_project)
     db.session.commit()
@@ -102,11 +101,11 @@ def get_edit():
     project_id = int(request.args.get("project_id"))
     project = Project.query.get_or_404(project_id)
     vulnerabilities = Vulnerability.query.filter(project_id == project_id).all()
-    print(project.vuln_count)
     return render_template("edit.html", project=project, vulnerabilities=vulnerabilities)
 
 @app.route("/edit", methods=["POST"])
 def post_edit():
+    print(request.form)
     project_id = int(request.form.get("project_id"))
     project = Project.query.get_or_404(project_id)
     vulnCount = project.vuln_count
@@ -122,10 +121,13 @@ def post_edit():
     delete_q = Vulnerability.__table__.delete().where(Vulnerability.project_id == project_id)
     db.session.execute(delete_q)
     db.session.commit()
+    print(vulnCount)
+    print(request.form.get(f"vulnerable_component-1"))
 
     # insert new ones
-    columns = ["vulnerabilityTitle", "description", "remediation", "impact", "poc"]
-    for i in range(1, vulnCount + 1):
+    columns = ["vulnerabilityTitle", "vulnerable_component" "description", "remediation", "impact", "poc"]
+    for i in range(1, vulnCount+1):
+        print(request.form.get(f"vulnerable_component-{i}"))
         new_vulnerability_obj = Vulnerability(
             project_id = project_id,
             title = request.form.get(f"vulnerabilityTitle-{i}"),
