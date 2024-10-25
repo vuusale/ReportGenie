@@ -39,6 +39,17 @@
     .btn-action {
       margin-right: 5px;
     }
+    .sortable {
+      cursor: pointer;
+    }
+    .ascending::after {
+      content: '\2191';
+      margin-left: 5px;
+    }
+    .descending::after {
+      content: '\2193';
+      margin-left: 5px;
+    }
   </style>
 </head>
 <body>
@@ -46,7 +57,7 @@
 <div class="container">
   <!-- Header Section -->
   <header class="d-flex justify-content-between align-items-center mb-4">
-    <h1><img src="favicon.ico" width="50" /> ReportGenie Dashboard</h1>
+    <h1><img src="favicon.ico" width="100" /> ReportGenie Dashboard</h1>
     <div>
       <a href="/generate" class="btn btn-create me-2">Generate Report</a>
       <button type="button" class="btn btn-settings" id="settings-btn">Settings</button>
@@ -57,25 +68,10 @@
   <div class="card mb-4">
     <div class="card-body">
       <h2>Old Reports</h2>
-      <!-- Search and Filter Options -->
+      <!-- Search Option -->
       <div class="row mb-3">
         <div class="col-md-6">
           <input type="text" class="form-control" id="searchProjects" placeholder="Search projects by name...">
-        </div>
-        <div class="col-md-3">
-          <select class="form-select" id="filterStatus">
-            <option value="">Filter by Status...</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <select class="form-select" id="sortProjects">
-            <option value="">Sort by...</option>
-            <option value="name">Name</option>
-            <option value="date">Start Date</option>
-            <option value="status">End Date</option>
-          </select>
         </div>
       </div>
 
@@ -83,9 +79,9 @@
       <table class="table table-bordered" id="projectsTable" style="display: none;">
         <thead>
           <tr>
-            <th>Project Name</th>
-            <th>Date of Test</th>
-            <th>Status</th>
+            <th id="titleHeader" class="sortable">Project Name</th>
+            <th id="dateHeader" class="sortable">Test Date</th>
+            <th id="vulnCountHeader" class="sortable">Vulnerability Count</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -102,38 +98,69 @@
 </div>
 
 <script>
+    const searchInput = document.getElementById('searchProjects');
+    const projectsTable = document.getElementById('projectsTable');
+    const projectsTableBody = projectsTable.querySelector('tbody');
+    const noProjectsMessage = document.getElementById('noProjectsMessage');
+    let projectsData = [];
+
     fetch('/projects')
       .then(response => response.json())
       .then(data => {
-        const projectsTable = document.getElementById('projectsTable');
-        const projectsTableBody = projectsTable.querySelector('tbody');
-        const noProjectsMessage = document.getElementById('noProjectsMessage');
-        
-        if (data.length > 0) {
-          noProjectsMessage.style.display = 'none';
-          projectsTable.style.display = 'table';
-
-          data.forEach((project, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${project.project_name}</td>
-              <td>${project.start_date}</td>
-              <td>${project.end_date}</td>
-              <td>
-                <a href="/edit?project_id=${project.project_id}" class="btn btn-primary btn-action" role="button">Edit</a>
-                <a href="/download?project_id=${project.project_id}" class="btn btn-success btn-action" role="button">Download Report</a>
-                <a href="/delete?project_id=${project.project_id}" class="btn btn-danger btn-action" role="button">Delete</a>
-              </td>
-            `;
-            projectsTableBody.appendChild(row);
-          });
-        } else {
-          noProjectsMessage.style.display = 'block';
-        }
+        projectsData = data;
+        updateProjectsTable();
       })
       .catch(error => {
         console.error('Error fetching projects:', error);
       });
+
+    function updateProjectsTable() {
+      projectsTableBody.innerHTML = '';
+      const filteredProjects = projectsData.filter(project =>
+        project.project_name.toLowerCase().includes(searchInput.value.toLowerCase())
+      );
+
+      if (filteredProjects.length > 0) {
+        noProjectsMessage.style.display = 'none';
+        projectsTable.style.display = 'table';
+
+        filteredProjects.forEach((project) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${project.project_name}</td>
+            <td>${project.start_date}</td>
+            <td>${project.vuln_count}</td>
+            <td>
+              <a href="/edit?project_id=${project.project_id}" class="btn btn-primary btn-action" role="button">Edit</a>
+              <a href="/download?project_id=${project.project_id}" class="btn btn-success btn-action" role="button">Download Report</a>
+              <a href="/delete?project_id=${project.project_id}" class="btn btn-danger btn-action" role="button">Delete</a>
+            </td>
+          `;
+          projectsTableBody.appendChild(row);
+        });
+      } else {
+        noProjectsMessage.style.display = 'block';
+        projectsTable.style.display = 'none';
+      }
+    }
+
+    searchInput.addEventListener('input', updateProjectsTable);
+
+    document.querySelectorAll('.sortable').forEach(header => {
+      let ascending = true;
+      header.addEventListener('click', () => {
+        const columnKey = header.id === 'titleHeader' ? 'project_name' : header.id === 'dateHeader' ? 'start_date' : 'vuln_count';
+        projectsData.sort((a, b) => {
+          if (a[columnKey] < b[columnKey]) return ascending ? -1 : 1;
+          if (a[columnKey] > b[columnKey]) return ascending ? 1 : -1;
+          return 0;
+        });
+        ascending = !ascending;
+        document.querySelectorAll('.sortable').forEach(h => h.classList.remove('ascending', 'descending'));
+        header.classList.add(ascending ? 'ascending' : 'descending');
+        updateProjectsTable();
+      });
+    });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>

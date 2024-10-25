@@ -17,14 +17,12 @@ def projects():
     projects = Project.query.all()
     project_list = []
     for project in projects:
+        vulnerabilities = Vulnerability.query.filter(Vulnerability.project_id == project.project_id).all()
         project_data = {
             'project_id': project.project_id,
             'project_name': project.project_name,
-            'reporter_name': project.reporter_name,
             'start_date': project.start_date,
-            'end_date': project.end_date,
-            'executive_summary': project.executive_summary,
-            'vulnerabilities': [vuln.vulnerability_id for vuln in project.vulnerabilities]
+            'vuln_count': len(vulnerabilities)
         }
         project_list.append(project_data)
     return jsonify(project_list)
