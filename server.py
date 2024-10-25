@@ -100,12 +100,11 @@ def delete():
 def get_edit():
     project_id = int(request.args.get("project_id"))
     project = Project.query.get_or_404(project_id)
-    vulnerabilities = Vulnerability.query.filter(project_id == project_id).all()
+    vulnerabilities = Vulnerability.query.filter(Vulnerability.project_id == project_id).all()
     return render_template("edit.html", project=project, vulnerabilities=vulnerabilities)
 
 @app.route("/edit", methods=["POST"])
 def post_edit():
-    print(request.form)
     project_id = int(request.form.get("project_id"))
     project = Project.query.get_or_404(project_id)
     vulnCount = project.vuln_count
@@ -121,13 +120,10 @@ def post_edit():
     delete_q = Vulnerability.__table__.delete().where(Vulnerability.project_id == project_id)
     db.session.execute(delete_q)
     db.session.commit()
-    print(vulnCount)
-    print(request.form.get(f"vulnerable_component-1"))
 
     # insert new ones
     columns = ["vulnerabilityTitle", "vulnerable_component" "description", "remediation", "impact", "poc"]
     for i in range(1, vulnCount+1):
-        print(request.form.get(f"vulnerable_component-{i}"))
         new_vulnerability_obj = Vulnerability(
             project_id = project_id,
             title = request.form.get(f"vulnerabilityTitle-{i}"),
