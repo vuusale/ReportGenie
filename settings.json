@@ -1,4 +1,1 @@
-{
-    "icon_path": "logo.png",
-    "reporter_name": "John Doe"
-}
+{"reporter_name": "John Doe", "icon_path": "logo.png"}

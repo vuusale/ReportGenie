@@ -38,6 +38,13 @@ class Vulnerability(db.Model):
     remediation = db.Column(db.Text, nullable=True)
     poc = db.Column(db.Text, nullable=True)
 
-if not os.path.exists('./findings.db'):
+class CustomField(db.Model):
+    __tablename__ = 'custom_fields'
+    
+    custom_field_id = db.Column(db.Integer, primary_key=True)
+    custom_field_name = db.Column(db.String(100), nullable=False)
+    custom_field_content = db.Column(db.Text, nullable=True)
+
+if not os.path.exists('./reportGenie.db'):
     with app.app_context():
         db.create_all()

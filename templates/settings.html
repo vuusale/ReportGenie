@@ -49,6 +49,7 @@
   <div class="container">
     <h1>Settings</h1>
     <form method="POST" action="/settings" enctype="multipart/form-data">
+      <input type="hidden" id="custom_field_count" name="custom_field_count" value="0">
       <!-- Reporter Name -->
       <div class="mb-3">
         <label for="reporter_name" class="form-label">Reporter Name</label>
@@ -63,13 +64,23 @@
 
       <!-- Upload Icon File -->
       <div class="mb-3">
-        <label for="icon_file" class="form-label">Upload Icon File</label>
-        <input type="file" class="form-control" id="icon_file" name="icon_file" accept="image/*">
+        <label for="iconFile" class="form-label">Upload Icon File</label>
+        <input type="file" class="form-control" id="iconFile" name="iconFile" accept="image/*">
       </div>
 
       <!-- Custom Fields -->
       <div id="custom-fields-container">
         <h2>Custom Fields</h2>
+        <!-- Render existing custom fields from the backend -->
+        {% for custom_field in custom_fields %}
+        <div class="custom-field mb-3" id="custom-field-{{ loop.index }}">
+          <label for="custom_field_name-{{ loop.index }}" class="form-label">Custom Field Name {{ loop.index }}</label>
+          <input type="text" class="form-control" id="custom_field_name-{{ loop.index }}" name="custom_field_name-{{ loop.index }}" value="{{ custom_field.custom_field_name }}" required>
+          <label for="custom_field_content-{{ loop.index }}" class="form-label mt-2">Custom Field Content {{ loop.index }}</label>
+          <input type="text" class="form-control" id="custom_field_content-{{ loop.index }}" name="custom_field_content-{{ loop.index }}" value="{{ custom_field.custom_field_content }}" required>
+          <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeCustomField({{loop.index}})">Remove</button>
+        </div>
+        {% endfor %}
       </div>
 
       <!-- Add Custom Field Button -->
@@ -86,20 +97,21 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    let customFieldCount = 0;
+    let custom_field_count = {{ custom_fields|length }};
 
     // Function to add a new custom field
     document.getElementById('add-custom-field-btn').addEventListener('click', function () {
-      customFieldCount++;
+      custom_field_count++;
+      document.getElementById('custom_field_count').value = custom_field_count;
       const customFieldsContainer = document.getElementById('custom-fields-container');
 
       const newCustomField = `
-        <div class="custom-field mb-3" id="custom-field-${customFieldCount}">
-          <label for="custom_field_name-${customFieldCount}" class="form-label">Custom Field Name ${customFieldCount}</label>
-          <input type="text" class="form-control" id="custom_field_name-${customFieldCount}" name="custom_field_name-${customFieldCount}" required>
-          <label for="custom_field_content-${customFieldCount}" class="form-label mt-2">Custom Field Content ${customFieldCount}</label>
-          <input type="text" class="form-control" id="custom_field_content-${customFieldCount}" name="custom_field_content-${customFieldCount}" required>
-          <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeCustomField(${customFieldCount})">Remove</button>
+        <div class="custom-field mb-3" id="custom-field-${custom_field_count}">
+          <label for="custom_field_name-${custom_field_count}" class="form-label">Custom Field Name ${custom_field_count}</label>
+          <input type="text" class="form-control" id="custom_field_name-${custom_field_count}" name="custom_field_name-${custom_field_count}" required>
+          <label for="custom_field_content-${custom_field_count}" class="form-label mt-2">Custom Field Content ${custom_field_count}</label>
+          <input type="text" class="form-control" id="custom_field_content-${custom_field_count}" name="custom_field_content-${custom_field_count}" required>
+          <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeCustomField(${custom_field_count})">Remove</button>
         </div>
       `;
 
@@ -112,7 +124,8 @@
       const fieldToRemove = document.getElementById(`custom-field-${fieldId}`);
       if (fieldToRemove) {
         fieldToRemove.remove();
-        customFieldCount--;
+        custom_field_count--;
+        document.getElementById('custom_field_count').value = custom_field_count;
         updateFieldTitles();
         updateRemoveButtonVisibility();
       }
@@ -144,7 +157,7 @@
     // Function to update the visibility of remove buttons
     function updateRemoveButtonVisibility() {
       const removeButtons = document.querySelectorAll('.custom-field .btn-danger');
-      if (customFieldCount > 0) {
+      if (custom_field_count > 0) {
         removeButtons.forEach(button => {
           button.style.display = 'inline-block';
         });

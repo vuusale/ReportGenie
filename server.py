@@ -2,13 +2,18 @@ from flask import request, send_file, render_template, redirect, jsonify
 from base64 import b64encode, b64decode
 from urllib.parse import quote_plus
 from reportGenie import generate_pentest_report
-from app import app, db, Project, Vulnerability
+from app import app, db, Project, Vulnerability, CustomField
 import json
 
 app.jinja_env.filters["quote_plus"] = lambda u: quote_plus(u)
 app.jinja_env.filters["b64encode"] = lambda u: b64encode(u.encode()).decode()
 app.jinja_env.filters["b64decode"] = lambda u: b64decode(u.encode()).decode()
 columns = ["vulnerability_name", "severity", "vulnerable_component", "description", "remediation", "impact", "poc"]
+
+def read_settings():
+    with open("settings.json", "rb") as f:
+        settings = json.load(f)
+    return settings
 
 @app.route("/", methods=["GET"])
 def index():
@@ -31,8 +36,7 @@ def projects():
 
 @app.route("/generate", methods=["GET"])
 def generate():
-    with open('settings.json') as f:
-        settings = json.load(f)
+    settings = read_settings()
     return render_template("generate.html", settings=settings) 
 
 @app.route("/generate", methods=["POST"])
@@ -74,8 +78,7 @@ def generate_report():
     db.session.add(new_project)
     db.session.commit()
 
-    with open("settings.json", "rb") as f:
-        settings = json.load(f)
+    settings = read_settings()
 
     generate_pentest_report(project_name, start_date, reporter_name, vulnerabilities, settings["icon_path"], executive_summary, f"reports/report-{new_project.project_id}.docx")
 
@@ -129,6 +132,8 @@ def post_edit():
 
 @app.route("/download", methods=["GET"])
 def download():
+    settings = read_settings()
+
     project_id = int(request.args.get("project_id"))
     project = Project.query.get_or_404(Project.project_id == project_id)
     generate_pentest_report(project.project_name, project.start_date, project.reporter_name, project.vulnerabilities, settings.icon_path, project.executive_summary, f"reports/report-{project_id}.docx")
@@ -137,15 +142,40 @@ def download():
 
 @app.route("/settings", methods=["GET"])
 def get_settings():
-    with open("settings.json", "rb") as f:
-        settings = json.load(f)
-    return render_template("settings.html", settings=settings)
+    settings = read_settings()
+    custom_fields = CustomField.query.all()
+    return render_template("settings.html", settings=settings, custom_fields=custom_fields)
 
 @app.route("/settings", methods=["POST"])
 def post_settings():
-    with open("settings.json", "rb") as f:
-        settings = json.load(f)
-    return render_template("settings.html", settings=settings)
+    reporter_name = request.form.get("reporter_name")
+    icon_path = request.form.get("icon_path")
+    settings = read_settings()
+    settings["reporter_name"] = reporter_name
+    settings["icon_path"] = icon_path
+    with open("settings.json", "w") as f:
+        json.dump(settings, f)
+        
+    if "icon_file" in request.files:
+        file = request.files["icon_file"]
+        file.save(f"{icon_path}" or file.filename)
+
+    custom_field_count = int(request.form.get("custom_field_count"))
+    if custom_field_count:
+        CustomField.query.delete()
+
+        for i in range(1, custom_field_count+1):
+            custom_field_name = request.form.get(f"custom_field_name-{i}")
+            custom_field_content = request.form.get(f"custom_field_content-{i}")
+            print(custom_field_name, custom_field_content)
+            custom_field_obj = CustomField(
+                custom_field_name = custom_field_name,
+                custom_field_content = custom_field_content
+            )
+            db.session.add(custom_field_obj)
+        db.session.commit()
+
+    return redirect("/settings")
 
 
 if __name__ == "__main__":
