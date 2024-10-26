@@ -1,12 +1,14 @@
-from flask import Flask, request, send_file, render_template, redirect, jsonify
+from flask import request, send_file, render_template, redirect, jsonify
 from base64 import b64encode, b64decode
-from urllib.parse import quote_plus, unquote_plus
+from urllib.parse import quote_plus
 from reportGenie import generate_pentest_report
 from app import app, db, Project, Vulnerability
+import json
 
 app.jinja_env.filters["quote_plus"] = lambda u: quote_plus(u)
 app.jinja_env.filters["b64encode"] = lambda u: b64encode(u.encode()).decode()
 app.jinja_env.filters["b64decode"] = lambda u: b64decode(u.encode()).decode()
+columns = ["vulnerability_name", "severity", "vulnerable_component", "description", "remediation", "impact", "poc"]
 
 @app.route("/", methods=["GET"])
 def index():
@@ -29,16 +31,18 @@ def projects():
 
 @app.route("/generate", methods=["GET"])
 def generate():
-    return render_template("generate.html") 
+    with open('settings.json') as f:
+        settings = json.load(f)
+    return render_template("generate.html", settings=settings) 
 
 @app.route("/generate", methods=["POST"])
 def generate_report():
-    projectName = request.form.get("projectName")
-    reporterName = request.form.get("reporterName")
-    startDate = request.form.get("startDate")
-    endDate = request.form.get("endDate")
-    executiveSummary = request.form.get("executiveSummary")
-    vulnCount = int(request.form.get("vulnCount"))
+    project_name = request.form.get("project_name")
+    reporter_name = request.form.get("reporter_name")
+    start_date = request.form.get("start_date")
+    end_date = request.form.get("end_date")
+    executive_summary = request.form.get("executive_summary")
+    vuln_count = int(request.form.get("vuln_count"))
     vulnerabilities = []
     last_project = db.session.query(Project).order_by(Project.project_id.desc()).first()
     if last_project:
@@ -46,44 +50,33 @@ def generate_report():
     else:
         project_id = 1
 
-    for i in range(1, vulnCount+1):
-        vulnerability = {
-            "vulnerability_name": request.form.get(f"vulnerabilityTitle-{i}"),
-            "vulnerable_component": request.form.get(f"vulnerable_component-{i}"),
-            "severity": request.form.get(f"severity-{i}"),
-            "description": request.form.get(f"description-{i}"),
-            "impact": request.form.get(f"impact-{i}"),
-            "remediation": request.form.get(f"remediation-{i}"),
-            "poc": "{{7*7}}"
-        }
+    for i in range(1, vuln_count+1):
+        vulnerability = {}
+        for column in columns:
+            vulnerability[column] = request.form.get(f"{column}-{i}")
+        print(vulnerability)
         vulnerabilities.append(vulnerability)
         
         new_vulnerability_obj = Vulnerability(
             project_id = project_id,
-            title = vulnerability["vulnerability_name"],
-            severity = vulnerability["severity"],
-            vulnerable_component = vulnerability["vulnerable_component"],
-            description = vulnerability["description"],
-            impact = vulnerability["impact"],
-            remediation = vulnerability["remediation"],
-            poc = vulnerability["poc"]
+            **vulnerability
         )
         db.session.add(new_vulnerability_obj)
         db.session.commit()
     
     new_project = Project(
-        project_name=projectName,
-        reporter_name=reporterName,
-        start_date=startDate,
-        end_date=endDate,
-        executive_summary=executiveSummary,
-        vuln_count=vulnCount
+        project_name=project_name,
+        reporter_name=reporter_name,
+        start_date=start_date,
+        end_date=end_date,
+        executive_summary=executive_summary,
+        vuln_count=vuln_count
     )
 
     db.session.add(new_project)
     db.session.commit()
 
-    generate_pentest_report(projectName, startDate, reporterName, vulnerabilities, "logo.png", executiveSummary, f"reports/report-{new_project.project_id}.docx")
+    generate_pentest_report(project_name, start_date, reporter_name, vulnerabilities, "logo.png", executive_summary, f"reports/report-{new_project.project_id}.docx")
 
     return redirect("/")
 
@@ -104,8 +97,8 @@ def get_edit():
 @app.route("/edit", methods=["POST"])
 def post_edit():
     project_id = int(request.form.get("project_id"))
+    vuln_count = int(request.form.get("vuln_count"))
     project = Project.query.get_or_404(project_id)
-    vulnCount = project.vuln_count
 
     project.project_name = request.form.get("project_name")
     project.reporter_name = request.form.get("reporter_name")
@@ -120,17 +113,13 @@ def post_edit():
     db.session.commit()
 
     # insert new ones
-    columns = ["vulnerabilityTitle", "vulnerable_component" "description", "remediation", "impact", "poc"]
-    for i in range(1, vulnCount+1):
+    for i in range(1, vuln_count+1):
+        vulnerability = {}
+        for column in columns:
+            vulnerability[f"{column}"] = request.form.get(f"{column}-{i}")
         new_vulnerability_obj = Vulnerability(
             project_id = project_id,
-            title = request.form.get(f"vulnerabilityTitle-{i}"),
-            severity = request.form.get(f"severity-{i}"),
-            vulnerable_component = request.form.get(f"vulnerable_component-{i}"),
-            description = request.form.get(f"description-{i}"),
-            impact = request.form.get(f"impact-{i}"),
-            remediation = request.form.get(f"remediation-{i}"),
-            poc = request.form.get(f"poc-{i}"),
+            **vulnerability
         )
         db.session.add(new_vulnerability_obj)
         db.session.commit()
