@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding-top: 50px;
+    }
+    .container {
+      max-width: 1200px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: bold;
+      color: #495057;
+    }
+    .btn-create {
+      background-color: #4c7488;
+      border-color: #4c7488;
+      color: #fff;
+    }
+    .btn-create:hover {
+      background-color: #3b5b6e;
+      border-color: #3b5b6e;
+    }
+    .btn-settings {
+      background-color: #6c757d;
+      border-color: #6c757d;
+      color: #fff;
+    }
+    .btn-settings:hover {
+      background-color: #5a6268;
+      border-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header Section -->
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <h1><img src="favicon.ico" width="100" /> ReportGenie Settings</h1>
+  </header>
+
+  <div class="container">
+    <h1>Settings</h1>
+    <form method="POST" action="/settings" enctype="multipart/form-data">
+      <!-- Reporter Name -->
+      <div class="mb-3">
+        <label for="reporter_name" class="form-label">Reporter Name</label>
+        <input type="text" class="form-control" id="reporter_name" name="reporter_name" required value="{{ settings.reporter_name or '' }}">
+      </div>
+
+      <!-- Icon Path -->
+      <div class="mb-3">
+        <label for="icon_path" class="form-label">Icon Path</label>
+        <input type="text" class="form-control" id="icon_path" name="icon_path" value="{{ settings.icon_path or '' }}">
+      </div>
+
+      <!-- Upload Icon File -->
+      <div class="mb-3">
+        <label for="icon_file" class="form-label">Upload Icon File</label>
+        <input type="file" class="form-control" id="icon_file" name="icon_file" accept="image/*">
+      </div>
+
+      <!-- Custom Fields -->
+      <div id="custom-fields-container">
+        <h2>Custom Fields</h2>
+      </div>
+
+      <!-- Add Custom Field Button -->
+      <div class="d-grid gap-2 mb-4">
+        <button type="button" class="btn btn-success" id="add-custom-field-btn">Add Custom Field</button>
+      </div>
+
+      <!-- Save Settings Button -->
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let customFieldCount = 0;
+
+    // Function to add a new custom field
+    document.getElementById('add-custom-field-btn').addEventListener('click', function () {
+      customFieldCount++;
+      const customFieldsContainer = document.getElementById('custom-fields-container');
+
+      const newCustomField = `
+        <div class="custom-field mb-3" id="custom-field-${customFieldCount}">
+          <label for="custom_field_name-${customFieldCount}" class="form-label">Custom Field Name ${customFieldCount}</label>
+          <input type="text" class="form-control" id="custom_field_name-${customFieldCount}" name="custom_field_name-${customFieldCount}" required>
+          <label for="custom_field_content-${customFieldCount}" class="form-label mt-2">Custom Field Content ${customFieldCount}</label>
+          <input type="text" class="form-control" id="custom_field_content-${customFieldCount}" name="custom_field_content-${customFieldCount}" required>
+          <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeCustomField(${customFieldCount})">Remove</button>
+        </div>
+      `;
+
+      customFieldsContainer.insertAdjacentHTML('beforeend', newCustomField);
+      updateRemoveButtonVisibility();
+    });
+
+    // Function to remove a custom field
+    function removeCustomField(fieldId) {
+      const fieldToRemove = document.getElementById(`custom-field-${fieldId}`);
+      if (fieldToRemove) {
+        fieldToRemove.remove();
+        customFieldCount--;
+        updateFieldTitles();
+        updateRemoveButtonVisibility();
+      }
+    }
+
+    // Function to update custom field titles
+    function updateFieldTitles() {
+      const remainingFields = document.querySelectorAll('.custom-field');
+      remainingFields.forEach((field, index) => {
+        const newIndex = index + 1;
+        field.id = `custom-field-${newIndex}`;
+        field.querySelector('label[for^="custom_field_name-"]').setAttribute('for', `custom_field_name-${newIndex}`);
+        field.querySelector('label[for^="custom_field_name-"]').innerText = `Custom Field Name ${newIndex}`;
+        const inputName = field.querySelector('input[id^="custom_field_name-"]');
+        inputName.id = `custom_field_name-${newIndex}`;
+        inputName.name = `custom_field_name-${newIndex}`;
+
+        field.querySelector('label[for^="custom_field_content-"]').setAttribute('for', `custom_field_content-${newIndex}`);
+        field.querySelector('label[for^="custom_field_content-"]').innerText = `Custom Field Content ${newIndex}`;
+        const inputContent = field.querySelector('input[id^="custom_field_content-"]');
+        inputContent.id = `custom_field_content-${newIndex}`;
+        inputContent.name = `custom_field_content-${newIndex}`;
+
+        const removeButton = field.querySelector('button');
+        removeButton.setAttribute('onclick', `removeCustomField(${newIndex})`);
+      });
+    }
+
+    // Function to update the visibility of remove buttons
+    function updateRemoveButtonVisibility() {
+      const removeButtons = document.querySelectorAll('.custom-field .btn-danger');
+      if (customFieldCount > 0) {
+        removeButtons.forEach(button => {
+          button.style.display = 'inline-block';
+        });
+      } else {
+        removeButtons.forEach(button => {
+          button.style.display = 'none';
+        });
+      }
+    }
+
+    // Initial call to set remove button visibility
+    updateRemoveButtonVisibility();
+  </script>
+</body>
+</html>

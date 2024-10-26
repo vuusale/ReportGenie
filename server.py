@@ -54,9 +54,7 @@ def generate_report():
         vulnerability = {}
         for column in columns:
             vulnerability[column] = request.form.get(f"{column}-{i}")
-        print(vulnerability)
         vulnerabilities.append(vulnerability)
-        
         new_vulnerability_obj = Vulnerability(
             project_id = project_id,
             **vulnerability
@@ -76,7 +74,10 @@ def generate_report():
     db.session.add(new_project)
     db.session.commit()
 
-    generate_pentest_report(project_name, start_date, reporter_name, vulnerabilities, "logo.png", executive_summary, f"reports/report-{new_project.project_id}.docx")
+    with open("settings.json", "rb") as f:
+        settings = json.load(f)
+
+    generate_pentest_report(project_name, start_date, reporter_name, vulnerabilities, settings["icon_path"], executive_summary, f"reports/report-{new_project.project_id}.docx")
 
     return redirect("/")
 
@@ -129,7 +130,23 @@ def post_edit():
 @app.route("/download", methods=["GET"])
 def download():
     project_id = int(request.args.get("project_id"))
+    project = Project.query.get_or_404(Project.project_id == project_id)
+    generate_pentest_report(project.project_name, project.start_date, project.reporter_name, project.vulnerabilities, settings.icon_path, project.executive_summary, f"reports/report-{project_id}.docx")
+
     return send_file(f"reports/report-{project_id}.docx")
+
+@app.route("/settings", methods=["GET"])
+def get_settings():
+    with open("settings.json", "rb") as f:
+        settings = json.load(f)
+    return render_template("settings.html", settings=settings)
+
+@app.route("/settings", methods=["POST"])
+def post_settings():
+    with open("settings.json", "rb") as f:
+        settings = json.load(f)
+    return render_template("settings.html", settings=settings)
+
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8000)
