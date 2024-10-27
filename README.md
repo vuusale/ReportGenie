@@ -1,4 +1,4 @@
-🧞‍♂️ ReportGenie: Your Wish, My Report!
+# 🧞‍♂️ ReportGenie: Your Wish, My Report!
 
 <img src="https://github.com/user-attachments/assets/b2b0fbc3-7722-4c3a-8ec3-2e05e741d07a" alt="drawing" width="500"/>
 
@@ -14,14 +14,15 @@ Think of ReportGenie as your trusty assistant who never misses a detail, formats
 
 ### 🧙‍♂️ How It Works
 
-- Summon the Genie: Open the web app (with Flask running), and fill in your project details.
-- Add Your Findings: For each vulnerability, add the title, description, severity, impact, and remediation steps. You can even provide references if you’re feeling extra thorough.
-- Wish Granted: Hit the Generate Report button and let ReportGenie conjure your pentest report in an instant. Magic, right?
+1. Summon the Genie: Open the web app (with Flask running), and fill in your project details and any custom fields you've defined..
+2. Add Your Findings: For each vulnerability, add details like title, description, severity, impact, and remediation. 
+4. Manage Projects: Edit or delete past projects as needed, and set up default settings for future reports.
+5. Generate Reports: Hit the Generate Report button, and let ReportGenie compile your pentest report in an instant.
+6. Download & Share: Download your reports anytime from past projects, ready to deliver to your client or team.
 
 ### 🚀 Setup
 
 1. Clone this repo:
-
 ```bash
 git clone https://github.com/vuusale/ReportGenie.git
 cd ReportGenie
@@ -34,22 +35,25 @@ pip install -r requirements.txt
 ```bash
 flask run
 ```
-4. Open the app: Navigate to `http://localhost` in your browser.
+4. Open the app: Navigate to `http://localhost:8000` in your browser.
 
 Now you’re ready to enter your findings and let the Genie do the rest!
 
 ### ✨ Features
 
 - Vulnerability Input Forms: Tell the Genie what you’ve uncovered—vulnerabilities, impact, remediation—it handles the rest.
-- Add as Many Vulnerabilities as You Want: Need more space? Click "Add Vulnerability," and voilà! A new form appears as if by magic.
-- Clean, Professional Report Output: Genie delivers a formatted, professional pentest report ready to impress your client or boss.
-- Client & Project Info: Input details like the project name, client name, and date to customize your report.
+- Add Unlimited Vulnerabilities: Easily add as many vulnerabilities as you need without any hassle.
+- Rich Text Editing: The text fields support rich text formatting, allowing you to enhance your content with various styling options.
+- Store Project Details: Save all your pentest project information securely within the app. No more scattered notes or lost details.
+- Professional Report: Generate clean, professionally formatted reports ready to impress your clients or boss.
+- Edit and Delete Past Projects: Need to update a report or remove an old project? The Genie allows you to do everything effortlessly.
+- Download Reports Anytime: Access and download reports of your past projects whenever you need them. Your reports are just a click away.
+- Set Default Settings: Customize default settings to match your preferred report style or company standards, saving you time on every project.
+- Define Custom Fields: Need to add specific information unique to your project? Define custom fields in your pentest report for complete flexibility.
 - Fast & Simple: No more hours lost to formatting—just wish for a report, and it’s done.
-
 
 > [!WARNING]  
 > **Pro tip: Don’t ask the Genie for infinite wishes. It’s a pentest reporting tool, not a loophole in magical contracts.**
-
 
 ### 🛠️ Tech stack
 
@@ -64,24 +68,19 @@ Now you’re ready to enter your findings and let the Genie do the rest!
 2. Describe Vulnerabilities: For each vulnerability:
   - Provide a title (e.g., “SQL Injection in Login Form”).
   - Select the severity (Low, Medium, High, or Critical).
+  - Indicate URL or vulnerable component
   - Write a clear and concise description.
   - Add the potential impact (so your client knows why it’s a big deal).
   - Provide remediation steps (so they know how to fix it).
-  -  Optionally, add references (e.g., OWASP guidelines).
 3. Generate the Report: With everything entered, click the Generate Report button and let ReportGenie do its thing. You’ll get a polished report, ready to deliver.
-
-### 🧞‍♂️ Meet the Genie
-
-ReportGenie is more than just a tool—it’s your new digital sidekick. Unlike other reporting tools, this Genie has personality:
-
-- Fast: The Genie doesn’t mess around. Input your findings and let it instantly whip up a professional report for you.
-- Accurate: Not only does it format your findings beautifully, but it also ensures no typo sneaks past!
-- Friendly: No confusing settings, no technical headaches—just you, the Genie, and a well-organized report.
 
 ### 🛡️ Why Use ReportGenie?
 
 - Time Saver: Spend less time formatting and more time finding vulnerabilities.
+- Customizable: Define default settings and custom fields to tailor reports to your needs.
+- Organized: Store, edit, and manage all your pentest projects in one place.
 - Standardized Format: All reports are consistently formatted and look professional.
+- User-Friendly: An intuitive interface that makes report generation a breeze.
 - Scalable: Handle any number of vulnerabilities without extra work.
 
 ### 📫 Contributing
@@ -91,5 +90,3 @@ If you have any cool feature ideas, bug fixes, or enhancements, feel free to sub
 So, what are you waiting for? Make a wish, summon the Genie, and let it handle the reports while you focus on the real hacking! 🧞‍♂️✨
 
 Happy Pentesting! 🎩🐍
-
-Feel free to adjust or add to this as you see fit! The goal is to maintain a light-hearted tone while still providing all the necessary details about the project.
