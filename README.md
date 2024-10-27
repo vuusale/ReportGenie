@@ -53,7 +53,7 @@ Now you’re ready to enter your findings and let the Genie do the rest!
 - Fast & Simple: No more hours lost to formatting—just wish for a report, and it’s done.
 
 > [!WARNING]  
-> **Pro tip: Don’t ask the Genie for infinite wishes. It’s a pentest reporting tool, not a loophole in magical contracts.**
+> **Pro tip: Don’t ask the Genie for infinite wishes. It's a pentest reporting tool—not an actual genie granting unlimited wishes.**
 
 ### 🛠️ Tech stack
 
