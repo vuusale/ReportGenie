@@ -1,6 +1,6 @@
 # 🧞‍♂️ ReportGenie: Your Wish, My Report!
 
-<img src="https://github.com/user-attachments/assets/b2b0fbc3-7722-4c3a-8ec3-2e05e741d07a" alt="drawing" width="500"/>
+<img src="https://github.com/user-attachments/assets/dc2b166c-097d-4bd5-b402-23e9dd190a60" alt="drawing" width="1000"/>
 
 👋 Welcome to ReportGenie, where a little magic (and code) goes a long way in generating professional pentest reports!
 
