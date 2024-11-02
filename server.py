@@ -161,9 +161,8 @@ def post_settings():
         file.save(f"{icon_path}" or file.filename)
 
     custom_field_count = int(request.form.get("custom_field_count"))
+    CustomField.query.delete()
     if custom_field_count:
-        CustomField.query.delete()
-
         for i in range(1, custom_field_count+1):
             custom_field_name = request.form.get(f"custom_field_name-{i}")
             custom_field_content = request.form.get(f"custom_field_content-{i}")
@@ -173,7 +172,7 @@ def post_settings():
                 custom_field_content = custom_field_content
             )
             db.session.add(custom_field_obj)
-        db.session.commit()
+    db.session.commit()
 
     return redirect("/settings")
 
