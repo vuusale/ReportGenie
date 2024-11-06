@@ -74,7 +74,7 @@ This is for updating the Table of Contents, so click "Yes". After that, I recomm
 - **Professional Report**: Generate clean, professionally formatted reports ready to impress your clients or boss.
 - **Edit and Delete Past Projects**: Need to update a report or remove an old project? The Genie allows you to do everything effortlessly.
 - **Download Reports Anytime**: Download reports of your past projects whenever you need them. Your reports are just a click away.
-- **Define Custom Fields**: Need to add specific sections unique to your project? Define custom fields in settings for complete flexibility.
+- **Define Custom Fields (coming soon)**: Need to add specific sections unique to your project? Define custom fields in settings for complete flexibility. 
 - **Fast & Simple**: No more hours lost to formatting—just wish for a report, and it’s done.
 
 > [!WARNING]  
