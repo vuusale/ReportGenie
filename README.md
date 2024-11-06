@@ -39,18 +39,24 @@ flask run
 
 Now you’re ready to enter your findings and let the Genie do the rest!
 
+### Docker installation
+
+You can also pull the docker image to testify Genie's capabilities! Just execute `bash run.sh` command in the project root to pull and run the image. 
+
+> [!WARNING]  
+> **Please keep in mind that all data will be gone when you terminate the container. So I recommend cloning the repository to get the full out of this tool.**
+
 ### ✨ Features
 
-- Vulnerability Input Forms: Tell the Genie what you’ve uncovered—vulnerabilities, impact, remediation—it handles the rest.
-- Add Unlimited Vulnerabilities: Easily add as many vulnerabilities as you need without any hassle.
-- Rich Text Editing: The text fields support rich text formatting, allowing you to enhance your content with various styling options.
-- Store Project Details: Save all your pentest project information securely within the app. No more scattered notes or lost details.
-- Professional Report: Generate clean, professionally formatted reports ready to impress your clients or boss.
-- Edit and Delete Past Projects: Need to update a report or remove an old project? The Genie allows you to do everything effortlessly.
-- Download Reports Anytime: Access and download reports of your past projects whenever you need them. Your reports are just a click away.
-- Set Default Settings: Customize default settings to match your preferred report style or company standards, saving you time on every project.
-- Define Custom Fields: Need to add specific information unique to your project? Define custom fields in your pentest report for complete flexibility.
-- Fast & Simple: No more hours lost to formatting—just wish for a report, and it’s done.
+- **Vulnerability Input Forms**: Tell the Genie what you’ve uncovered—vulnerabilities, impact, remediation—it handles the rest.
+- **Add Unlimited Vulnerabilities**: Easily add as many vulnerabilities as you need without any hassle.
+- **Rich Text Editing**: The text fields support rich text formatting, allowing you to enhance your content with various styling options.
+- **Store Project Details**: Save all your pentest project information securely within the app. No more scattered notes or lost details.
+- **Professional Report**: Generate clean, professionally formatted reports ready to impress your clients or boss.
+- **Edit and Delete Past Projects**: Need to update a report or remove an old project? The Genie allows you to do everything effortlessly.
+- **Download Reports Anytime**: Download reports of your past projects whenever you need them. Your reports are just a click away.
+- **Define Custom Fields**: Need to add specific sections unique to your project? Define custom fields in settings for complete flexibility.
+- **Fast & Simple**: No more hours lost to formatting—just wish for a report, and it’s done.
 
 > [!WARNING]  
 > **Pro tip: Don’t ask the Genie for infinite wishes. It's a pentest reporting tool—not an actual genie granting unlimited wishes.**
@@ -64,7 +70,7 @@ Now you’re ready to enter your findings and let the Genie do the rest!
 
 ### 📖 Usage Guide
 
-1. Enter Project Details: Start by telling the Genie what project you’re working on and who it’s for.
+1. Start by telling the Genie details about the project you’re working on such as start and end dates, executive summary, etc.
 2. Describe Vulnerabilities: For each vulnerability:
   - Provide a title (e.g., “SQL Injection in Login Form”).
   - Select the severity (Low, Medium, High, or Critical).
@@ -72,7 +78,8 @@ Now you’re ready to enter your findings and let the Genie do the rest!
   - Write a clear and concise description.
   - Add the potential impact (so your client knows why it’s a big deal).
   - Provide remediation steps (so they know how to fix it).
-3. Generate the Report: With everything entered, click the Generate Report button and let ReportGenie do its thing. You’ll get a polished report, ready to deliver.
+3. With everything entered, click the Generate Report button and let ReportGenie do its thing. 
+4. Click Download Report button to get a polished report, ready to deliver to your client. 
 
 ### 🛡️ Why Use ReportGenie?
 
