@@ -7,6 +7,34 @@ import matplotlib.pyplot as plt
 import io
 from docx.shared import Inches
 from datetime import datetime
+from docx.opc.part import Part
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
+import pypandoc
+import io
+import tempfile
+import os
+
+def add_alt_chunk(doc: Document, html: str):
+    package = doc.part.package
+    partname = package.next_partname('/word/altChunk%d.html')
+    alt_part = Part(partname, 'text/html', html.encode(), package)
+    r_id = doc.part.relate_to(alt_part, RT.A_F_CHUNK)
+    alt_chunk = OxmlElement('w:altChunk')
+    alt_chunk.set(qn('r:id'), r_id)
+    doc.element.body.sectPr.addprevious(alt_chunk)
+
+def add_html_to_docx(doc: Document, html: str):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
+        temp_filename = temp_file.name
+        pypandoc.convert_text(html, 'docx', format='html', outputfile=temp_filename)
+
+    temp_doc = Document(temp_filename)
+    
+    for element in temp_doc.element.body:
+        print(doc.element.body.xml)
+        doc.element.body.append(element)
+
+    os.remove(temp_filename)
 
 def format_date_range(start_date, end_date):
     # Define date format
@@ -136,14 +164,16 @@ def generate_pentest_report(report_title, start_date, end_date, reporter_name, v
         description_paragraph = doc.add_paragraph()
         description_run = description_paragraph.add_run("Description: ")
         description_run.bold = True
-        description_value_run = description_paragraph.add_run(vuln.description)
+        # description_value_run = description_paragraph.add_run(vuln.description)
         description_paragraph.paragraph_format.line_spacing = 1.5
+        add_html_to_docx(doc, vuln.description)
 
         impact_paragraph = doc.add_paragraph()
         impact_run = impact_paragraph.add_run("Impact: ")
         impact_run.bold = True
-        impact_value_run = impact_paragraph.add_run(vuln.impact)
+        # impact_value_run = impact_paragraph.add_run(vuln.impact)
         impact_paragraph.paragraph_format.line_spacing = 1.5
+        add_html_to_docx(doc, vuln.impact)
 
         remediation_paragraph = doc.add_paragraph()
         remediation_run = remediation_paragraph.add_run("Remediation: ")
