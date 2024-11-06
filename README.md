@@ -81,6 +81,12 @@ You can also pull the docker image to testify Genie's capabilities! Just execute
 3. With everything entered, click the Generate Report button and let ReportGenie do its thing. 
 4. Click Download Report button to get a polished report, ready to deliver to your client. 
 
+When opening the docx file every time, you will encounter a popup like the following:
+
+<img src="https://github.com/user-attachments/assets/8372f4b9-d779-4563-9d83-64d7c1102c82" width="1000" />
+
+This is for updating the Table of Contents, so click "Yes". After that, I recommend saving the file as DOCX or PDF to avoid seeing a popup every time.
+
 ### 🛡️ Why Use ReportGenie?
 
 - Time Saver: Spend less time formatting and more time finding vulnerabilities.
