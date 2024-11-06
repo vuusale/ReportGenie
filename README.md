@@ -63,7 +63,7 @@ When opening the docx file every time, you will encounter a popup like the follo
 
 <img src="https://github.com/user-attachments/assets/8372f4b9-d779-4563-9d83-64d7c1102c82" width="1000" />
 
-This is for updating the Table of Contents, so click "Yes". After that, I recommend saving the file as DOCX or PDF to avoid seeing a popup every time.
+This is for updating the Table of Contents, so click "Yes", then "OK". After that, I recommend saving the file as DOCX or PDF to avoid seeing a popup every time.
 
 ### ✨ Features
 
