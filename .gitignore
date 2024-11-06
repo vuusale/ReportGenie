@@ -1,3 +1,5 @@
 __pycache__
 server.log
 .DS_STORE
+instance
+reports/*.docx

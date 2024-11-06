@@ -6,6 +6,22 @@ from docx.oxml import OxmlElement
 import matplotlib.pyplot as plt
 import io
 from docx.shared import Inches
+from datetime import datetime
+
+def format_date_range(start_date, end_date):
+    # Define date format
+    start_fmt = "%-d %B"
+    end_fmt = "%-d %B %Y"
+    
+    # Handle cases where months are the same or different
+    if start_date.month == end_date.month:
+        # If month is the same, format as "1-4 November 2024"
+        formatted_range = f"{start_date.strftime('%-d')}-{end_date.strftime(end_fmt)}"
+    else:
+        # If month is different, format as "20 November-10 December 2024"
+        formatted_range = f"{start_date.strftime(start_fmt)}-{end_date.strftime(end_fmt)}"
+    
+    return formatted_range
 
 def remove_empty_pages(doc):
     for paragraph in doc.paragraphs:
@@ -54,10 +70,12 @@ def add_toc(doc, paragraph):
 
     p_element = paragraph._p
 
-def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, icon_path, executive_summary, output_path):
+def generate_pentest_report(report_title, start_date, end_date, reporter_name, vulnerabilities, icon_path, executive_summary, output_path):
     template_path = 'report.docx'
     doc = Document(template_path)
-
+    start_date = datetime(*[int(i) for i in start_date.split("-")])
+    end_date = datetime(*[int(i) for i in end_date.split("-")])
+    date = format_date_range(start_date, end_date)
     for paragraph in doc.paragraphs:
         if '{REPORT_TITLE}' in paragraph.text:
             paragraph.text = paragraph.text.replace('{REPORT_TITLE}', report_title)
@@ -84,24 +102,25 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
 
     for i, vuln in enumerate(vulnerabilities, start=1):
         heading = doc.add_heading(level=2)
-        heading_run = heading.add_run(f"{i}. {vuln['vulnerability_name']}")
+        heading_run = heading.add_run(f"{i}. {vuln.vulnerability_name}")
 
         heading.paragraph_format.line_spacing = 1.5
 
         severity_paragraph = doc.add_paragraph()
         severity_run = severity_paragraph.add_run("Severity: ")
         severity_run.bold = True
-        severity_value_run = severity_paragraph.add_run(vuln['severity'])
+        severity_value_run = severity_paragraph.add_run(vuln.severity)
         severity_value_run.bold = True
-        if vuln['severity'].lower() == 'critical':
+        severity_value = vuln.severity
+        if severity_value.lower() == 'critical':
             severity_value_run.font.color.rgb = RGBColor(128, 0, 0)
-        elif vuln['severity'].lower() == 'high':
+        elif severity_value.lower() == 'high':
             severity_value_run.font.color.rgb = RGBColor(255, 0, 0)
-        elif vuln['severity'].lower() == 'medium':
+        elif severity_value.lower() == 'medium':
             severity_value_run.font.color.rgb = RGBColor(255, 165, 0)
-        elif vuln['severity'].lower() == 'low':
+        elif severity_value.lower() == 'low':
             severity_value_run.font.color.rgb = RGBColor(0, 0, 255)
-        elif vuln['severity'].lower() == 'informational':
+        elif severity_value.lower() == 'informational':
             severity_value_run.font.color.rgb = RGBColor(0, 128, 0)
         else:
             severity_value_run.font.color.rgb = RGBColor(0, 0, 0)
@@ -111,31 +130,31 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
         vulnerable_component_paragraph = doc.add_paragraph()
         vulnerable_component_run = vulnerable_component_paragraph.add_run("URL/Vulnerable component: ")
         vulnerable_component_run.bold = True
-        vulnerable_component_value_run = vulnerable_component_paragraph.add_run(vuln['vulnerable_component'])
+        vulnerable_component_value_run = vulnerable_component_paragraph.add_run(vuln.vulnerable_component)
         vulnerable_component_paragraph.paragraph_format.line_spacing = 1.5
 
         description_paragraph = doc.add_paragraph()
         description_run = description_paragraph.add_run("Description: ")
         description_run.bold = True
-        description_value_run = description_paragraph.add_run(vuln['description'])
+        description_value_run = description_paragraph.add_run(vuln.description)
         description_paragraph.paragraph_format.line_spacing = 1.5
 
         impact_paragraph = doc.add_paragraph()
         impact_run = impact_paragraph.add_run("Impact: ")
         impact_run.bold = True
-        impact_value_run = impact_paragraph.add_run(vuln['impact'])
+        impact_value_run = impact_paragraph.add_run(vuln.impact)
         impact_paragraph.paragraph_format.line_spacing = 1.5
 
         remediation_paragraph = doc.add_paragraph()
         remediation_run = remediation_paragraph.add_run("Remediation: ")
         remediation_run.bold = True
-        remediation_value_run = remediation_paragraph.add_run(vuln['remediation'])
+        remediation_value_run = remediation_paragraph.add_run(vuln.remediation)
         remediation_paragraph.paragraph_format.line_spacing = 1.5
 
         poc_paragraph = doc.add_paragraph()
         poc_run = poc_paragraph.add_run("PoC: ")
         poc_run.bold = True
-        poc_value_run = poc_paragraph.add_run(vuln['poc'])
+        poc_value_run = poc_paragraph.add_run(vuln.poc)
         poc_paragraph.paragraph_format.line_spacing = 1.5
 
     severity_counts = {
@@ -148,7 +167,7 @@ def generate_pentest_report(report_title, date, reporter_name, vulnerabilities, 
     }
     
     for vuln in vulnerabilities:
-        severity = vuln['severity'].capitalize()
+        severity = severity_value.capitalize()
         if severity in severity_counts:
             severity_counts[severity] += 1
         else:

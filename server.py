@@ -78,10 +78,6 @@ def generate_report():
     db.session.add(new_project)
     db.session.commit()
 
-    settings = read_settings()
-
-    generate_pentest_report(project_name, start_date, reporter_name, vulnerabilities, settings["icon_path"], executive_summary, f"reports/report-{new_project.project_id}.docx")
-
     return redirect("/")
 
 @app.route("/delete", methods=["GET"])
@@ -111,12 +107,10 @@ def post_edit():
     project.executive_summary = request.form.get("executive_summary")
     db.session.commit()
 
-    # remove old vulnerability entries
     delete_q = Vulnerability.__table__.delete().where(Vulnerability.project_id == project_id)
     db.session.execute(delete_q)
     db.session.commit()
 
-    # insert new ones
     for i in range(1, vuln_count+1):
         vulnerability = {}
         for column in columns:
@@ -135,8 +129,15 @@ def download():
     settings = read_settings()
 
     project_id = int(request.args.get("project_id"))
-    project = Project.query.get_or_404(Project.project_id == project_id)
-    generate_pentest_report(project.project_name, project.start_date, project.reporter_name, project.vulnerabilities, settings.icon_path, project.executive_summary, f"reports/report-{project_id}.docx")
+    project = Project.query.filter_by(project_id=project_id).all()[0]
+    settings = read_settings()
+    project_name = project.project_name
+    start_date = project.start_date
+    end_date = project.end_date
+    reporter_name = project.reporter_name
+    vulnerabilities = Vulnerability.query.filter_by(project_id=project_id).all()
+    executive_summary = project.executive_summary
+    generate_pentest_report(project_name, start_date, end_date, reporter_name, vulnerabilities, settings["icon_path"], executive_summary, f"reports/report-{project.project_id}.docx")
 
     return send_file(f"reports/report-{project_id}.docx")
 
@@ -166,7 +167,6 @@ def post_settings():
         for i in range(1, custom_field_count+1):
             custom_field_name = request.form.get(f"custom_field_name-{i}")
             custom_field_content = request.form.get(f"custom_field_content-{i}")
-            print(custom_field_name, custom_field_content)
             custom_field_obj = CustomField(
                 custom_field_name = custom_field_name,
                 custom_field_content = custom_field_content
@@ -178,4 +178,4 @@ def post_settings():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8000)
+    app.run(host="0.0.0.0", port=8000)
