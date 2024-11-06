@@ -46,6 +46,25 @@ You can also pull the docker image to testify Genie's capabilities! Just execute
 > [!WARNING]  
 > **Please keep in mind that all data will be gone when you terminate the container. So I recommend cloning the repository to get the full out of this tool.**
 
+### 📖 Usage Guide
+
+1. Start by telling the Genie details about the project you’re working on such as start and end dates, executive summary, etc.
+2. Describe Vulnerabilities: For each vulnerability:
+  - Provide a title (e.g., “SQL Injection in Login Form”).
+  - Select the severity (Low, Medium, High, or Critical).
+  - Indicate URL or vulnerable component
+  - Write a clear and concise description.
+  - Add the potential impact (so your client knows why it’s a big deal).
+  - Provide remediation steps (so they know how to fix it).
+3. With everything entered, click the Generate Report button and let ReportGenie do its thing. 
+4. Click Download Report button to get a polished report, ready to deliver to your client. 
+
+When opening the docx file every time, you will encounter a popup like the following:
+
+<img src="https://github.com/user-attachments/assets/8372f4b9-d779-4563-9d83-64d7c1102c82" width="1000" />
+
+This is for updating the Table of Contents, so click "Yes". After that, I recommend saving the file as DOCX or PDF to avoid seeing a popup every time.
+
 ### ✨ Features
 
 - **Vulnerability Input Forms**: Tell the Genie what you’ve uncovered—vulnerabilities, impact, remediation—it handles the rest.
@@ -67,25 +86,6 @@ You can also pull the docker image to testify Genie's capabilities! Just execute
 - Front-End: Bootstrap for sleek and responsive forms.
 - Docx Templates: Custom templates for each report generated.
 - Dynamic Form Handling: Add multiple vulnerabilities dynamically without refreshing the page.
-
-### 📖 Usage Guide
-
-1. Start by telling the Genie details about the project you’re working on such as start and end dates, executive summary, etc.
-2. Describe Vulnerabilities: For each vulnerability:
-  - Provide a title (e.g., “SQL Injection in Login Form”).
-  - Select the severity (Low, Medium, High, or Critical).
-  - Indicate URL or vulnerable component
-  - Write a clear and concise description.
-  - Add the potential impact (so your client knows why it’s a big deal).
-  - Provide remediation steps (so they know how to fix it).
-3. With everything entered, click the Generate Report button and let ReportGenie do its thing. 
-4. Click Download Report button to get a polished report, ready to deliver to your client. 
-
-When opening the docx file every time, you will encounter a popup like the following:
-
-<img src="https://github.com/user-attachments/assets/8372f4b9-d779-4563-9d83-64d7c1102c82" width="1000" />
-
-This is for updating the Table of Contents, so click "Yes". After that, I recommend saving the file as DOCX or PDF to avoid seeing a popup every time.
 
 ### 🛡️ Why Use ReportGenie?
 
