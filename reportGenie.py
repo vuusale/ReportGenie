@@ -13,90 +13,7 @@ import pypandoc
 import io
 import tempfile
 import os
-
-def add_alt_chunk(doc: Document, html: str):
-    package = doc.part.package
-    partname = package.next_partname('/word/altChunk%d.html')
-    alt_part = Part(partname, 'text/html', html.encode(), package)
-    r_id = doc.part.relate_to(alt_part, RT.A_F_CHUNK)
-    alt_chunk = OxmlElement('w:altChunk')
-    alt_chunk.set(qn('r:id'), r_id)
-    doc.element.body.sectPr.addprevious(alt_chunk)
-
-def add_html_to_docx(doc: Document, html: str):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as temp_file:
-        temp_filename = temp_file.name
-        pypandoc.convert_text(html, 'docx', format='html', outputfile=temp_filename)
-
-    temp_doc = Document(temp_filename)
-    
-    for element in temp_doc.element.body:
-        print(doc.element.body.xml)
-        doc.element.body.append(element)
-
-    os.remove(temp_filename)
-
-def format_date_range(start_date, end_date):
-    # Define date format
-    start_fmt = "%-d %B"
-    end_fmt = "%-d %B %Y"
-    
-    # Handle cases where months are the same or different
-    if start_date.month == end_date.month:
-        # If month is the same, format as "1-4 November 2024"
-        formatted_range = f"{start_date.strftime('%-d')}-{end_date.strftime(end_fmt)}"
-    else:
-        # If month is different, format as "20 November-10 December 2024"
-        formatted_range = f"{start_date.strftime(start_fmt)}-{end_date.strftime(end_fmt)}"
-    
-    return formatted_range
-
-def remove_empty_pages(doc):
-    for paragraph in doc.paragraphs:
-        # Remove page breaks followed by empty paragraphs
-        if paragraph._element.xpath('.//w:br[@w:type="page"]') and not paragraph.text.strip():
-            parent = paragraph._element.getparent()
-            parent.remove(paragraph._element)
-
-def add_toc(doc, paragraph):
-    run = paragraph.add_run("Table of Contents")
-    run.alignment = WD_ALIGN_PARAGRAPH.CENTER 
-    run.font.name = 'Arial'
-    run.font.size = Pt(14)
-    run.bold = True
-    run.underline = True
-
-    fldChar = OxmlElement('w:fldChar')  # creates a new element
-    fldChar.set(qn('w:fldCharType'), 'begin')  # sets attribute on element
-
-    instrText = OxmlElement('w:instrText')
-    instrText.set(qn('xml:space'), 'preserve')  # sets attribute on element
-    instrText.text = 'TOC \\o "1-3" \\h \\z \\u'   # change 1-3 depending on heading levels you need
-
-    fldChar2 = OxmlElement('w:fldChar')
-    fldChar2.set(qn('w:fldCharType'), 'separate')
-
-    fldChar3 = OxmlElement('w:t')
-    fldChar3.text = "Right-click to update field."
-    fldChar3 = OxmlElement('w:updateFields') 
-    fldChar3.set(qn('w:val'), 'true') 
-    fldChar2.append(fldChar3)
-
-    fldChar4 = OxmlElement('w:fldChar')
-    fldChar4.set(qn('w:fldCharType'), 'end')
-
-    r_element = run._r
-    r_element.append(fldChar)
-    r_element.append(instrText)
-    r_element.append(fldChar2)
-    r_element.append(fldChar4)
-
-    # Automatically update TOC without requiring a manual update
-    update_fields = OxmlElement('w:updateFields')
-    update_fields.set(qn('w:val'), 'true')
-    doc.element.body.insert(0, update_fields)
-
-    p_element = paragraph._p
+from utils import * 
 
 def generate_pentest_report(report_title, start_date, end_date, reporter_name, vulnerabilities, icon_path, executive_summary, output_path):
     template_path = 'report.docx'
@@ -164,28 +81,26 @@ def generate_pentest_report(report_title, start_date, end_date, reporter_name, v
         description_paragraph = doc.add_paragraph()
         description_run = description_paragraph.add_run("Description: ")
         description_run.bold = True
-        # description_value_run = description_paragraph.add_run(vuln.description)
-        description_paragraph.paragraph_format.line_spacing = 1.5
-        add_html_to_docx(doc, vuln.description)
+        add_html_after_paragraph(doc, "Description", vuln.description, description_paragraph)
+        # add_html_after_paragraph(doc, 'Description', vuln.description, description_paragraph)
 
         impact_paragraph = doc.add_paragraph()
+        impact_paragraph.paragraph_format.space_before = Pt(8)
         impact_run = impact_paragraph.add_run("Impact: ")
         impact_run.bold = True
-        # impact_value_run = impact_paragraph.add_run(vuln.impact)
-        impact_paragraph.paragraph_format.line_spacing = 1.5
-        add_html_to_docx(doc, vuln.impact)
+        add_html_after_paragraph(doc, 'Impact', vuln.impact, impact_paragraph)
 
         remediation_paragraph = doc.add_paragraph()
+        remediation_paragraph.paragraph_format.space_before = Pt(8)
         remediation_run = remediation_paragraph.add_run("Remediation: ")
         remediation_run.bold = True
-        remediation_value_run = remediation_paragraph.add_run(vuln.remediation)
-        remediation_paragraph.paragraph_format.line_spacing = 1.5
+        add_html_after_paragraph(doc, 'Remediation', vuln.remediation, remediation_paragraph)
 
         poc_paragraph = doc.add_paragraph()
+        poc_paragraph.paragraph_format.space_before = Pt(8)
         poc_run = poc_paragraph.add_run("PoC: ")
         poc_run.bold = True
-        poc_value_run = poc_paragraph.add_run(vuln.poc)
-        poc_paragraph.paragraph_format.line_spacing = 1.5
+        add_html_after_paragraph(doc, 'PoC', vuln.poc, poc_paragraph)
 
     severity_counts = {
         'Critical': 0,
@@ -268,7 +183,7 @@ def generate_pentest_report(report_title, start_date, end_date, reporter_name, v
         if '{REPORT_TITLE}' in paragraph.text or '{DATE}' in paragraph.text or '{REPORTER_NAME}' in paragraph.text:
             paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
             paragraph.paragraph_format.space_before = Pt(600)
-
+    
     doc.save(output_path)
     print(f"Report generated: {output_path}")
 
