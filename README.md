@@ -80,21 +80,14 @@ This is for updating the Table of Contents, so click "Yes", then "OK". After tha
 > [!WARNING]  
 > **Pro tip: Don’t ask the Genie for infinite wishes. It's a pentest reporting tool—not an actual genie granting unlimited wishes.**
 
-### 🛠️ Tech stack
-
-- Framework: Flask (Python)
-- Front-End: Bootstrap for sleek and responsive forms.
-- Docx Templates: Custom templates for each report generated.
-- Dynamic Form Handling: Add multiple vulnerabilities dynamically without refreshing the page.
-
 ### 🛡️ Why Use ReportGenie?
 
-- Time Saver: Spend less time formatting and more time finding vulnerabilities.
-- Customizable: Define default settings and custom fields to tailor reports to your needs.
-- Organized: Store, edit, and manage all your pentest projects in one place.
-- Standardized Format: All reports are consistently formatted and look professional.
-- User-Friendly: An intuitive interface that makes report generation a breeze.
-- Scalable: Handle any number of vulnerabilities without extra work.
+- **Time Saver**: Spend less time formatting and more time finding vulnerabilities.
+- **Customizable**: Define default settings and custom fields to tailor reports to your needs.
+- **Organized**: Store, edit, and manage all your pentest projects in one place.
+- **Standardized Format**: All reports are consistently formatted and look professional.
+- **User-Friendly**: An intuitive interface that makes report generation a breeze.
+- **Scalable**: Handle any number of vulnerabilities without extra work.
 
 ### 📫 Contributing
 
