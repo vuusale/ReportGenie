@@ -6,30 +6,81 @@ import matplotlib.pyplot as plt
 import io
 from utils import *
 
-def generate_pentest_report(report_title, start_date, end_date, reporter_name, vulnerabilities, icon_path, executive_summary, output_path):
+def generate_pentest_report(report_title, start_date, end_date, reporter_name, vulnerabilities, icon_path, executive_summary, custom_fields, output_path):
     doc = Document('report.docx')
     start_date = datetime(*[int(i) for i in start_date.split("-")])
     end_date = datetime(*[int(i) for i in end_date.split("-")])
     date = format_date_range(start_date, end_date)
 
+    severity_counts = {
+        'Critical': 0,
+        'High': 0,
+        'Medium': 0,
+        'Low': 0,
+        'Informational': 0,
+        'Other': 0
+    }
+
+    for vuln in vulnerabilities:
+        severity = vuln.severity.capitalize()
+        if severity in severity_counts:
+            severity_counts[severity] += 1
+        else:
+            severity_counts['Other'] += 1
+
+    labels = [label for label, count in severity_counts.items() if count > 0]
+    sizes = [count for count in severity_counts.values() if count > 0]
+    colors = ['#800000', '#FF0000', '#FFA500', '#0000FF', '#008000', '#800080'][:len(labels)]
+
+    plt.switch_backend('Agg')
+    plt.figure(figsize=(6, 6))
+    plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
+    plt.axis('equal')
+    plt.title('Vulnerability Severity Distribution\n')
+
+    pie_chart_stream = io.BytesIO()
+    plt.savefig(pie_chart_stream, format='png')
+    pie_chart_stream.seek(0)
+
     for paragraph in doc.paragraphs:
         if '{REPORT_TITLE}' in paragraph.text:
             paragraph.text = paragraph.text.replace('{REPORT_TITLE}', report_title)
-        if '{DATE}' in paragraph.text:
+        elif '{DATE}' in paragraph.text:
             paragraph.text = paragraph.text.replace('{DATE}', date)
-        if '{REPORTER_NAME}' in paragraph.text:
+        elif '{REPORTER_NAME}' in paragraph.text:
             paragraph.text = paragraph.text.replace('{REPORTER_NAME}', reporter_name)
-        if '{ICON}' in paragraph.text:
+        elif '{ICON}' in paragraph.text:
             paragraph.text = ''
             run = paragraph.add_run()
             run.add_picture(icon_path, height=Inches(1.2))
             run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             paragraph.paragraph_format.space_after = Pt(18)
-        if '{TOC}' in paragraph.text:
+        elif '{TOC}' in paragraph.text:
             paragraph.clear()
             add_toc(doc, paragraph)
-        if '{EXECUTIVE_SUMMARY}' in paragraph.text:
+        elif '{EXECUTIVE_SUMMARY}' in paragraph.text:
             paragraph.text = executive_summary
+        elif '{REPORT_TITLE}' in paragraph.text or '{DATE}' in paragraph.text or '{REPORTER_NAME}' in paragraph.text:
+            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+            paragraph.paragraph_format.space_before = Pt(600)
+        elif '{TECHNICAL_SUMMARY_CHART}' in paragraph.text:
+            paragraph.text = ''
+            run = paragraph.add_run()
+            run.add_picture(pie_chart_stream, width=Inches(4.5))
+            run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        elif '{CUSTOM}' in paragraph.text:
+            paragraph.text = ''
+            if custom_fields:
+                for custom_field in custom_fields:
+                    doc.add_heading(custom_field.custom_field_name)
+                    paragraph = doc.add_paragraph(custom_field.custom_field_content)
+                    paragraph.paragraph_format.line_spacing = 1.5
+
+    doc.add_page_break()
+    heading = doc.add_heading("Vulnerabilities")
+    vuln_run = heading.add_run()
+    vuln_run.add_break()
+    vuln_run.add_break()
 
     for i, vuln in enumerate(vulnerabilities, start=1):
         heading = doc.add_heading(level=2)
@@ -74,44 +125,6 @@ def generate_pentest_report(report_title, start_date, end_date, reporter_name, v
         poc_paragraph.add_run("PoC: ").bold = True
         add_html_after_paragraph(doc, 'PoC', vuln.poc, poc_paragraph)
 
-    severity_counts = {
-        'Critical': 0,
-        'High': 0,
-        'Medium': 0,
-        'Low': 0,
-        'Informational': 0,
-        'Other': 0
-    }
-
-    for vuln in vulnerabilities:
-        severity = vuln.severity.capitalize()
-        if severity in severity_counts:
-            severity_counts[severity] += 1
-        else:
-            severity_counts['Other'] += 1
-
-    labels = [label for label, count in severity_counts.items() if count > 0]
-    sizes = [count for count in severity_counts.values() if count > 0]
-    colors = ['#800000', '#FF0000', '#FFA500', '#0000FF', '#008000', '#800080'][:len(labels)]
-
-    plt.switch_backend('Agg')
-    plt.figure(figsize=(6, 6))
-    plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
-    plt.axis('equal')
-    plt.title('Vulnerability Severity Distribution\n')
-
-    pie_chart_stream = io.BytesIO()
-    plt.savefig(pie_chart_stream, format='png')
-    pie_chart_stream.seek(0)
-
-    for paragraph in doc.paragraphs:
-        if '{TECHNICAL_SUMMARY_CHART}' in paragraph.text:
-            paragraph.text = ''
-            run = paragraph.add_run()
-            run.add_picture(pie_chart_stream, width=Inches(4.5))
-            run.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-            break
-
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -135,11 +148,6 @@ def generate_pentest_report(report_title, start_date, end_date, reporter_name, v
         header_paragraph.add_run().add_picture(icon_path, height=Inches(0.4))
         header_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         header_paragraph.paragraph_format.line_spacing = 1.5
-
-    for paragraph in doc.paragraphs:
-        if '{REPORT_TITLE}' in paragraph.text or '{DATE}' in paragraph.text or '{REPORTER_NAME}' in paragraph.text:
-            paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-            paragraph.paragraph_format.space_before = Pt(600)
 
     doc.save(output_path)
     print(f"Report generated: {output_path}")

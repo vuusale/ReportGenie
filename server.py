@@ -137,7 +137,8 @@ def download():
     reporter_name = project.reporter_name
     vulnerabilities = Vulnerability.query.filter_by(project_id=project_id).all()
     executive_summary = project.executive_summary
-    generate_pentest_report(project_name, start_date, end_date, reporter_name, vulnerabilities, settings["icon_path"], executive_summary, f"reports/report-{project.project_id}.docx")
+    custom_fields = CustomField.query.all()
+    generate_pentest_report(project_name, start_date, end_date, reporter_name, vulnerabilities, settings["icon_path"], executive_summary, custom_fields, f"reports/report-{project.project_id}.docx")
 
     return send_file(f"reports/report-{project_id}.docx")
 

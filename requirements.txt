@@ -2,3 +2,4 @@ flask
 flask-sqlalchemy
 python-docx
 matplotlib
+pypandoc
