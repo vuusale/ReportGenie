@@ -1,4 +1,5 @@
 .vscode
+.git
 venv
 __pycache__
 instance

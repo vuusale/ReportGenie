@@ -2,4 +2,4 @@ flask
 flask-sqlalchemy
 python-docx
 matplotlib
-pypandoc
+pypandoc_binary
