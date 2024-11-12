@@ -1,4 +1,4 @@
-# 🧞‍♂️ ReportGenie: Your Wish, My Report!
+# 🧞‍♀️ ReportGenie: Your Wish, My Report!
 
 <img src="https://github.com/user-attachments/assets/dc2b166c-097d-4bd5-b402-23e9dd190a60" alt="drawing" width="1000"/>
 
