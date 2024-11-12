@@ -14,11 +14,11 @@ Think of ReportGenie as your trusty assistant who never misses a detail, formats
 
 ### 🧙‍♂️ How It Works
 
-1. Summon the Genie: Open the web app (with Flask running), and fill in your project details and any custom fields you've defined..
-2. Add Your Findings: For each vulnerability, add details like title, description, severity, impact, and remediation. 
-4. Manage Projects: Edit or delete past projects as needed, and set up default settings for future reports.
-5. Generate Reports: Hit the Generate Report button, and let ReportGenie compile your pentest report in an instant.
-6. Download & Share: Download your reports anytime from past projects, ready to deliver to your client or team.
+1. **Summon the Genie**: Open the web app (with Flask running), and fill in your project details and any custom fields you've defined..
+2. **Add Your Findings**: For each vulnerability, add details like title, description, severity, impact, and remediation. 
+4. **Manage Projects**: Edit or delete past projects as needed, and set up default settings for future reports.
+5. **Generate Reports**: Hit the Generate Report button, and let ReportGenie compile your pentest report in an instant.
+6. **Download & Share**: Download your reports anytime from past projects, ready to deliver to your client or team.
 
 ### 🚀 Setup
 
@@ -78,7 +78,7 @@ This is for updating the Table of Contents, so click "Yes", then "OK". After tha
 - **Fast & Simple**: No more hours lost to formatting—just wish for a report, and it’s done.
 
 > [!WARNING]  
-> **Pro tip: Don’t ask the Genie for infinite wishes. It's a pentest reporting tool—not an actual genie granting unlimited wishes.**
+> **There migth be certain formatting issues in the resulting document, such as an empty page or some HTML elements not rendering. That's because reportGenie cannot entirely replace humans 😊**
 
 ### 🛡️ Why Use ReportGenie?
 
