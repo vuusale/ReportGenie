@@ -78,7 +78,7 @@ This is for updating the Table of Contents, so click "Yes", then "OK". After tha
 - **Fast & Simple**: No more hours lost to formatting—just wish for a report, and it’s done.
 
 > [!WARNING]  
-> **There migth be certain formatting issues in the resulting document, such as an empty page or some HTML elements not rendering. That's because reportGenie cannot entirely replace humans 😊**
+> **There might be certain formatting issues in the resulting document, such as an empty page or some HTML elements not rendering. That's because reportGenie cannot entirely replace humans 😊**
 
 ### 🛡️ Why Use ReportGenie?
 
