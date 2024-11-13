@@ -77,7 +77,6 @@ def generate_pentest_report(report_title, start_date, end_date, reporter_name, v
                     paragraph.paragraph_format.line_spacing = 1.5
 
     doc.add_page_break()
-    print(dir(doc.inline_shapes.part))
     heading = doc.add_heading("Vulnerabilities")
     vuln_run = heading.add_run()
     vuln_run.add_break()
