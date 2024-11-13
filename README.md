@@ -1,4 +1,4 @@
-# 🧞‍♂️ ReportGenie: Your Wish, My Report!
+# 🧞‍♀️ ReportGenie: Your Wish, My Report!
 
 <img src="https://github.com/user-attachments/assets/dc2b166c-097d-4bd5-b402-23e9dd190a60" alt="drawing" width="1000"/>
 
@@ -41,7 +41,7 @@ Now you’re ready to enter your findings and let the Genie do the rest!
 
 ### Docker installation
 
-You can also pull the docker image to testify Genie's capabilities! Just execute `bash run.sh` command in the project root to pull and run the image. 
+You can also pull the docker image to testify Genie's capabilities! Just execute `docker run -p 8000:8000 vuusale/reportgenie:latest` command to awaken the genie. 
 
 > [!WARNING]  
 > **Please keep in mind that all data will be gone when you terminate the container. So I recommend cloning the repository to get the full out of this tool.**
@@ -78,7 +78,7 @@ This is for updating the Table of Contents, so click "Yes", then "OK". After tha
 - **Fast & Simple**: No more hours lost to formatting—just wish for a report, and it’s done.
 
 > [!WARNING]  
-> **There migth be certain formatting issues in the resulting document, such as an empty page or some HTML elements not rendering. That's because reportGenie cannot entirely replace humans 😊**
+> **There might be certain formatting issues in the resulting document, such as an empty page or some HTML elements not rendering. That's because reportGenie cannot entirely replace humans 😊**
 
 ### 🛡️ Why Use ReportGenie?
 
