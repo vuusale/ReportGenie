@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ```
 3. Run the Flask app:
 ```bash
-flask run
+python3 server.py
 ```
 4. Open the app: Navigate to `http://localhost:8000` in your browser.
 
@@ -41,7 +41,7 @@ Now you’re ready to enter your findings and let the Genie do the rest!
 
 ### Docker installation
 
-You can also pull the docker image to testify Genie's capabilities! Just execute `docker run -p 8000:8000 vuusale/reportgenie:latest` command to awaken the genie. 
+You can also pull the docker image to testify Genie's capabilities! Just execute `docker run -p 8000:8000 vuusale/reportgenie:latest` command and awaken the genie. 
 
 > [!WARNING]  
 > **Please keep in mind that all data will be gone when you terminate the container. So I recommend cloning the repository to get the full out of this tool.**
