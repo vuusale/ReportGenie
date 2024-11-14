@@ -39,7 +39,7 @@ python3 server.py
 
 Now you’re ready to enter your findings and let the Genie do the rest!
 
-### Docker installation
+**Docker installation**
 
 You can also pull the docker image to testify Genie's capabilities! Just execute `docker run -p 8000:8000 vuusale/reportgenie:latest` command and awaken the genie. 
 
